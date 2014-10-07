@@ -245,26 +245,9 @@
 '(() "<html>hi")
 
 |#
-    
-    (define (star parser) 
-      (lambda (x)
-        (let ([result (parser x)])
-          (if (equal? (first result) 'error)
-              (list '() x)
-              (list (append (list (first result)) ((star parser) (second result)) ) (second ((star parser) (second result)))))
-      )))
-   
-    
-    
-    
-    
-    #| HTML Parsing |#
-    
-    
-    
-    #|
 
 
+#| HTML Parsing |#
 (define (star parser)
   (lambda (x)
     (let ([result (parser x)])
@@ -272,10 +255,6 @@
           (list '() x)
           (list (append (list (first result)) (first ((star parser) (second result)))) (second ((star parser) (second result)))))
   )))
-
-
-#| HTML Parsing |#
-
 
 
 #|
