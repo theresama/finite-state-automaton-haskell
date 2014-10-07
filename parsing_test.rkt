@@ -26,4 +26,12 @@
 (check-expect ((either parse-plain-char parse-html-tag) "<html>hello") '("<html>" "hello")) 
 (check-expect ((either parse-plain-char parse-html-tag) "<xml>hello") '(error "<xml>hello"))
 
+(check-expect ((both parse-html-tag parse-plain-char) "<html>hello") '(("<html>" #\h) "ello"))
+(check-expect ((both parse-html-tag parse-plain-char) "<xml>hello") '(error "<xml>hello"))
+(check-expect ((both parse-html-tag parse-plain-char) "<html> hello") '(error "<html> hello"))
+
+(check-expect ((star parse-plain-char) "hi") '((#\h #\i) ""))
+(check-expect ((star parse-plain-char) "hi there") '((#\h #\i) " there"))
+(check-expect ((star parse-plain-char) "<html>hi") '(() "<html>hi"))
+
 (test)

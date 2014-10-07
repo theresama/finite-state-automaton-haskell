@@ -32,8 +32,6 @@
 
   Otherwise, returns (list 'error "hi"), signifying an error.
 
-
-
 > (parse-html-tag "<html></html>")
 
 '("<html>" "</html>")
@@ -160,12 +158,12 @@
 (define (either parser1 parser2) 
   (lambda (x) 
     (let ([result-1 (parser1 x)])
-          (if (equal? (first (parser1 x)) 'error)
-              (parser2 x)
-              result-1
-              ))))
+      (if (equal? (first result-1) 'error)
+          (parser2 x)
+          result-1
+          ))))
 
-    #|
+#|
 
 (both parser1 parser2)
 
@@ -187,8 +185,6 @@
 
       parser1 or parser2.
 
-
-
 > ((both parse-html-tag parse-plain-char) "<html>hello")
 
 '(("<html>" #\h) "ello")
@@ -202,18 +198,23 @@
 '(error "<html> hello")
 
 |#
-    
-    (define (both parser1 parser2) (void))
-    
-    
-    
-    
-    
-    #|
+
+(define (both parser1 parser2)
+  (lambda (x) 
+    (let ([result-1 (parser1 x)])
+      (if (equal? (first result-1) 'error)
+          result-1
+          (let ([result-2 (parser2 (second result-1))])
+            (if (equal? (first result-2) 'error)
+                (list 'error x)
+                (list (list (first result-1) (first result-2)) (second result-2))
+                )
+            ))
+      )))
+
+#|
 
 (star parser)
-
-
 
   Return a new parser that tries to parse using parser
 
@@ -225,15 +226,11 @@
 
   until it reaches the end of the string or gets an error.
 
-
-
   Note that the new parser never returns an error; even if
 
   the first attempt at parsing fails, the data returned
 
   is simply '().
-
-
 
 > ((star parse-plain-char) "hi")
 
@@ -266,6 +263,22 @@
     
     
     #|
+
+
+(define (star parser)
+  (lambda (x)
+    (let ([result (parser x)])
+      (if (equal? (first result) 'error)
+          (list '() x)
+          (list (append (list (first result)) (first ((star parser) (second result)))) (second ((star parser) (second result)))))
+  )))
+
+
+#| HTML Parsing |#
+
+
+
+#|
 
 (parse-html str)
 
@@ -302,11 +315,8 @@
 > (parse-html "<blAh></blAh>")
 
 '(("blAh"
-
    ()
-
    "")
-
   "")
 
 > (parse-html "<body><p>Not good</body></p>")
@@ -314,15 +324,36 @@
 '(error "<body><p>Not good</body></p>")
 
 |#
-    
-    (define (parse-html str) (void))
-    
-    (define (is-special char)
-      (let ([special '(#\< #\> #\" #\/ #\=)])
-        (ormap (lambda (x) (equal? x char)) special)
-        ))
-    
-    (define (is-white char)
-      (if (equal? #\space char)
-          #t
-          #f))
+
+(define (parse-html str) (void))
+
+(define (is-special char)
+  (let ([special '(#\< #\> #\" #\/ #\=)])
+    (ormap (lambda (x) (equal? x char)) special)
+    ))
+
+(define (is-white char)
+  (if (equal? #\space char)
+      #t
+      #f))
+
+;parse the first tag in str - does not contain whitespace or special characters
+;returns a list - name of attribute as first element, rest of the string after the tag as second
+(define (get-tag-name str) (void))
+
+;cuts out the name; returns str with just attributes
+(define (get-attributes str) (void))
+
+;returns nested list of attributes
+(define (parse-attributes str) (void))
+
+
+;theresa
+;returns closing tag
+(define (get-body str) (void))
+
+;gets text
+(define (get-text str) (void))
+
+
+
