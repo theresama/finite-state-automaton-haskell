@@ -125,7 +125,7 @@
 |#
 
 (define (parse-plain-char str) 
-  (if (or (equal? str "") (is-white (string-ref str 0)))
+  (if (is-white (string-ref str 0))
       (list 'error str)
       (parse-non-special-char str)
       ))
@@ -249,14 +249,8 @@
 
 |#
     
-    (define (star parser) 
-      (lambda (x)
-        (let ([result (parser x)])
-          (if (equal? (first result) 'error)
-              (list '() x)
-              (list (append (list (first result)) ((star parser) (second result)) ) (second ((star parser) (second result)))))
-      )))
-   
+    (define (star parser) (void))
+    
     
     
     
