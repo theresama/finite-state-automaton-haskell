@@ -311,10 +311,10 @@ takes in a list of attribute/value
 |#  
 
 (define (parse-list-attribute-value lst)
-  (if (empty? lst)
+  (if (or (empty? lst) (< (length lst) 2))
       '()
       (let ([attribute (string-replace (string-replace (first lst) " " "") "=" "")]
-            [value (second lst)])
+            [value (first (rest lst))])
         (cons (list attribute value) (parse-list-attribute-value (rest (rest lst)))
         ))))
   
