@@ -6,7 +6,7 @@
 
 <Name>, <CDF>
 
-<Name>, <CDF>
+Theresa Ma 999596343, g2potato
 
 |#
 
@@ -18,26 +18,18 @@
          
          either both star
          
-         parse-html is-white is-special)
+         parse-html is-white? is-special?)
 
 
 
 #|
-
 (parse-html-tag str)
-
   If str starts with "<html>", returns a pair (list "<html>" rest), where
-
   rest is the part of str after "<html>".
-
   Otherwise, returns (list 'error "hi"), signifying an error.
-
 > (parse-html-tag "<html></html>")
-
 '("<html>" "</html>")
-
 > (parse-html-tag "<hey><html>")
-
 '(error "<hey><html>")
 
 |#
@@ -51,23 +43,14 @@
       ))
 
 #|
-
 (make-text-parser t)
-
   Return a parser that tries to read *one* occurrence of t at the
-
   start of its input.
-
 > (define parse-hi (make-text-parser "hi"))
-
 > (parse-hi "hiya!")
-
 '("hi" "ya!")
-
 > (parse-hi "goodbye hi")
-
 '(error "goodbye hi")
-
 |#
 
 (define (make-text-parser t) 
@@ -79,54 +62,64 @@
               (list t (substring str str-l))
               (list 'error str))))))
 
-
-
-
-
 #|
-
 (parse-non-special-char str)
-
   Try to parse *one* non-special character at the start of str.
-
 > (parse-non-special-char "hi")
-
 '(#\h "i")
-
 > (parse-non-special-char "<html>")
-
 '(error "<html>")
-
 |#
 
 (define (parse-non-special-char str) 
   (let ([f-letter (string-ref str 0)])
-    (if (is-special f-letter)
+    (if (is-special? f-letter)
         (list 'error str)
         (list f-letter (substring str 1))
         )))
-
 #|
 
 (parse-plain-char str)
-
   Try to parse *one* non-special, non-white character at the start of str.
-
 > (parse-plain-char "hi")
-
 '(#\h "i")
-
 > (parse-plain-char " hello!")
-
 '(error " hello!")
-
 |#
 
 (define (parse-plain-char str) 
-  (if (or (equal? str "") (is-white (string-ref str 0)))
+  (if (or (equal? str "") (is-white? (string-ref str 0)))
       (list 'error str)
       (parse-non-special-char str)
       ))
+
+#|
+(is-special? char)
+    Checks if the char is a special character.
+> (is-special? #\<)
+#t
+> (is-special? "H")
+#f
+|#
+
+(define (is-special? char)
+  (let ([special '(#\< #\> #\" #\/ #\=)])
+    (ormap (lambda (x) (equal? x char)) special)
+    ))
+
+#|
+(is-white? char)
+    Checks if the char is a whitespace.
+> (is-white? #\space)
+#t
+> (is-white? "asdf")
+#f
+
+|#
+(define (is-white? char)
+  (if (equal? #\space char)
+      #t
+      #f))
 
 #| Parsing Combinators |#
 
@@ -215,35 +208,21 @@
 #|
 
 (star parser)
-
   Return a new parser that tries to parse using parser
-
   0 or more times, returning as its data a list of *all*
-
   parsed values. This new parser should be *greedy*: it
-
   always uses the input parser as many times as it can,
-
   until it reaches the end of the string or gets an error.
-
   Note that the new parser never returns an error; even if
-
   the first attempt at parsing fails, the data returned
-
   is simply '().
 
 > ((star parse-plain-char) "hi")
-
 '((#\h #\i) "")
-
 > ((star parse-plain-char) "hi there")
-
 '((#\h #\i) " there")
-
 > ((star parse-plain-char) "<html>hi")
-
 '(() "<html>hi")
-
 |#
 
 
@@ -256,65 +235,38 @@
           (list (append (list (first result)) (first ((star parser) (second result)))) (second ((star parser) (second result)))))
   )))
 
-
 #|
 
 (parse-html str)
-
-
-
   Parse HTML content at the beginning of str, returning (list data rest),
-
   where data is the tree representation of the parsed HTML specified in the
-
   assignment handout, and rest is the rest of str that has not been parsed.
 
-
-
   If the string does not start with a valid html string, return
-
   (list 'error str) instead.
 
-
-
 > (parse-html "<html><body class=\"hello\" >Hello, world!</body></html> Other")
-
 '(("html"
-
    ()
-
    ("body"
-
     (("class" "hello"))
-
     "Hello, world!"))
-
   " Other")
 
 > (parse-html "<blAh></blAh>")
-
 '(("blAh"
    ()
    "")
   "")
 
 > (parse-html "<body><p>Not good</body></p>")
-
 '(error "<body><p>Not good</body></p>")
 
 |#
 
 (define (parse-html str) (void))
 
-(define (is-special char)
-  (let ([special '(#\< #\> #\" #\/ #\=)])
-    (ormap (lambda (x) (equal? x char)) special)
-    ))
 
-(define (is-white char)
-  (if (equal? #\space char)
-      #t
-      #f))
 
 ;parse the first tag in str - does not contain whitespace or special characters
 ;returns a list - name of attribute as first element, rest of the string after the tag as second
@@ -329,6 +281,9 @@
 
 ;theresa
 ;returns closing tag
+;pass in the tag name
+;returns all the children contained within its opening and closing tags
+;returns error if cannot parse for the end tag
 (define (get-body str) (void))
 
 ;gets text
