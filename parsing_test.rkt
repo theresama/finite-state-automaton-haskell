@@ -51,4 +51,7 @@ Theresa Ma 999596343, g2potato
 (check-expect (parse-closing-tag "p" "<span class=\"red\">text goes here</span></p><div></div></body>") "<span class=\"red\">text goes here</span>") 
 (check-expect (parse-closing-tag "p" "<span class=\"red\">text goes here</span><div></div></body>") '(error))
 (check-expect (parse-closing-tag "h1" "") '(error))
+
+
+
 (test)

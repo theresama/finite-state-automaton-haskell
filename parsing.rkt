@@ -276,7 +276,7 @@ Helper function for parse-attributes
 (define (parse-one-attribute str)(void))
 
 
-#|theresa
+#|
 (parse-closing-tag str)
 This is a closing tag parser. It finds the matching closing tag and 
   returns all the children elements of the given tag as a string
@@ -315,9 +315,38 @@ If no closing tag is found, an error is returned
             (substring html 0 first-index)
             (find-tag tag (substring html 0 (- html-length 1)))
             ))))
+#|
+(parse-body-children str)
+Given the body of an HTML element, this function will parse
+the element if it contains children
 
-;gets text
-(define (get-text str) (void))
+(parse-body-children "<span class=\"red\">text goes here</span>")
+"yes children"
+|#
+(define (parse-body-children str) 
+  (let ([html-no-space (string-replace str " " "")])
+    (if (equal? (string-length html-no-space) 0)
+        (parse-body-text str)
+        (if (equal? (substring html-no-space 0 1) "<")
+            "yes children" ; parse the tag element aka do everything again
+            (parse-body-text str) ;this html element only contains text, so call the other function
+  ))))
+
+#|
+(parse-body-text str)
+Given the body of an HTML element, this function will 
+return the body text of the element
+
+> (parse-body-text "hello")
+"hello"
+
+|#
+(define (parse-body-text str) 
+  (if (string? str)
+      str
+      '(error)))
+
+
 
 
 
