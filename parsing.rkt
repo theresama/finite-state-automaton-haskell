@@ -202,7 +202,7 @@ Theresa Ma 999596343, g2potato
       (if (equal? (first result) 'error)
           (list '() x)
           (list (append (list (first result)) (first ((star parser) (second result)))) (second ((star parser) (second result)))))
-  )))
+      )))
 
 #|
 (parse-html str)
@@ -245,8 +245,19 @@ This is an opening tag parser. It parses an opening tag and
 
 If the tag name is invalid it returns
   (list 'error str) instead.
+
+>(parse-opening-tag "<body> hey")
+'("<body>" " hey")
+>(parse-opening-tag "body> hey")
+'(error "body> hey")
+>(parse-opening-tag "<p id=\"main\" class=\"super\">Hey</p>")
+
 |#
-(define (parse-opening-tag str) (void))
+(define (parse-opening-tag str)
+  (if(equal? (substring str 0 1) "<")
+     (let ([html-tag (string-append (first (string-split str ">")) ">")])
+       (list html-tag (substring str (string-length html-tag))))
+     '(error)))
 
 #|
 (parse-attributes str)
