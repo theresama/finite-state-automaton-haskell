@@ -124,28 +124,16 @@ Theresa Ma 999596343, g2potato
 #| Parsing Combinators |#
 
 #|
-
 (either parser1 parser2)
-
   Return a new parser that does the following:
-
     - Try to apply parser 1; if success, return that result
-
     - Otherwise, return the result of applying parser 2
-
-
 > ((either parse-plain-char parse-html-tag) "hello")
-
 '(#\h "ello")
-
 > ((either parse-plain-char parse-html-tag) "<html>hello")
-
 '("<html>" "hello")
-
 > ((either parse-plain-char parse-html-tag) "<xml>hello")
-
 '(error "<xml>hello")
-
 |#
 
 (define (either parser1 parser2) 
@@ -157,39 +145,22 @@ Theresa Ma 999596343, g2potato
           ))))
 
 #|
-
 (both parser1 parser2)
-
   Return a new parser that does the following:
-
     - Apply parser1; if failure, return failure
-
     - Otherwise, apply parser2 to the rest of the string
-
       not parsed by parser1
-
     - If failure, emit failure, together with *original* string
-
     - If success, return (list data rest), where data is a *LIST*
-
       containing the data parsed by parser1 and parser2, in that order,
-
       and rest is the part of the string not parsed by either
-
       parser1 or parser2.
-
 > ((both parse-html-tag parse-plain-char) "<html>hello")
-
 '(("<html>" #\h) "ello")
-
 > ((both parse-html-tag parse-plain-char) "<xml>hello")
-
 '(error "<xml>hello")
-
 > ((both parse-html-tag parse-plain-char) "<html> hello")
-
 '(error "<html> hello")
-
 |#
 
 (define (both parser1 parser2)
@@ -206,7 +177,6 @@ Theresa Ma 999596343, g2potato
       )))
 
 #|
-
 (star parser)
   Return a new parser that tries to parse using parser
   0 or more times, returning as its data a list of *all*
@@ -216,7 +186,6 @@ Theresa Ma 999596343, g2potato
   Note that the new parser never returns an error; even if
   the first attempt at parsing fails, the data returned
   is simply '().
-
 > ((star parse-plain-char) "hi")
 '((#\h #\i) "")
 > ((star parse-plain-char) "hi there")
@@ -236,7 +205,6 @@ Theresa Ma 999596343, g2potato
   )))
 
 #|
-
 (parse-html str)
   Parse HTML content at the beginning of str, returning (list data rest),
   where data is the tree representation of the parsed HTML specified in the
@@ -267,24 +235,64 @@ Theresa Ma 999596343, g2potato
 (define (parse-html str) (void))
 
 
+#|
+(parse-opening-tag str)
+This is an opening tag parser. It parses an opening tag and 
+  returns a pair where the fisrt element is
+  the tag name (containing no whitespace or special 
+  characters) as a string and the second element is the rest
+  of str that wasn't parsed
 
-;parse the first tag in str - does not contain whitespace or special characters
-;returns a list - name of attribute as first element, rest of the string after the tag as second
-(define (get-tag-name str) (void))
+If the tag name is invalid it returns
+  (list 'error str) instead.
+|#
+(define (parse-opening-tag str) (void))
 
-;cuts out the name; returns str with just attributes
-(define (get-attributes str) (void))
+#|
+(parse-attributes str)
+This is an attribute parser. It parses the attributes
+  of a given opening tag. It returns a list of the
+  attributes and their values. Each attribute, value 
+  pair is a list containing two strings. 
 
-;returns nested list of attributes
+If the attributes are invalid it returns
+  (list 'error str) instead.
+
+> (parse-attributes "class="heading" id="special"")
+(("class" "heading")("id" "special"))
+
+
+|#
 (define (parse-attributes str) (void))
 
+#|
+(parse-one-attribute str)
+Helper function for parse-attributes
 
-;theresa
-;returns closing tag
-;pass in the tag name
-;returns all the children contained within its opening and closing tags
-;returns error if cannot parse for the end tag
-(define (get-body str) (void))
+> (parse-one-attribute "class="heading"")
+("class" "heading")
+
+|#
+(define (parse-one-attribute str)(void))
+
+
+#|theresa
+(parse-closing-tag str)
+This is a closing tag parser. It finds the matching closing tag and 
+  returns all the children elements of the given tag as a string
+
+If the string does not start contain valid open and closing tags, return
+  (list 'error str) instead.
+
+- recursively search through str, starting from the end to find </tag-name>
+let closing-tag = (string-append "</" tag-name "<")
+
+
+|#
+(define (parse-closing-tag str tag-name)
+  
+  (void)  
+  )
 
 ;gets text
 (define (get-text str) (void))

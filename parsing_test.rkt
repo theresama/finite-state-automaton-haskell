@@ -20,8 +20,8 @@ Theresa Ma 999596343, g2potato
 (check-expect (parse-hi "hiya!") '("hi" "ya!"))
 (check-expect (parse-hi "goodbye hi") '(error "goodbye hi"))
 
-(check-expect (is-special #\<) #t) 
-(check-expect (is-special "H") #f)
+(check-expect (is-special? #\<) #t) 
+(check-expect (is-special? "H") #f)
 
 (check-expect (is-white? #\space) #t) 
 (check-expect (is-white? "asdf") #f)
