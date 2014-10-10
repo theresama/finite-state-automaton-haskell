@@ -18,7 +18,7 @@ Theresa Ma 999596343, g2potato
          
          either both star
          
-         parse-html is-white? is-special?)
+         parse-html is-white? is-special? find-tag parse-closing-tag)
 
 
 
@@ -287,7 +287,7 @@ Helper function for parse-attributes
 (define (parse-one-attribute str)(void))
 
 
-#|theresa
+#|
 (parse-closing-tag str)
 This is a closing tag parser. It finds the matching closing tag and 
   returns all the children elements of the given tag as a string
@@ -295,18 +295,69 @@ This is a closing tag parser. It finds the matching closing tag and
 If the string does not start contain valid open and closing tags, return
   (list 'error str) instead.
 
-- recursively search through str, starting from the end to find </tag-name>
-let closing-tag = (string-append "</" tag-name "<")
-
+> (parse-closing-tag "p" "<span class=\"red\">text goes here</span></p><div></div></body>")
+"<span class=\"red\">text goes here</span>"
 
 |#
-(define (parse-closing-tag str tag-name)
-  
-  (void)  
-  )
 
-;gets text
-(define (get-text str) (void))
+(define (parse-closing-tag tag-name str)
+  (let ([closing-tag (string-append "</" tag-name ">")])
+    (find-tag closing-tag str)
+  ))
+
+#|
+(find-tag first-index last-index)
+Finds the last occurence of a tag and returns all its children
+
+If no closing tag is found, an error is returned
+
+> (find-tag "</p>" "<span class=\"red\">text goes here</span></p><div></div></body>")
+"<span class=\"red\">text goes here</span>"
+
+|#
+
+(define (find-tag tag html)
+  (let* ([tag-length (string-length tag)]
+        [html-length (string-length html)]
+        [first-index (- html-length tag-length)])
+    (if (< first-index 0)
+        '(error)
+        (if (equal? (substring html first-index html-length) tag)
+            (substring html 0 first-index)
+            (find-tag tag (substring html 0 (- html-length 1)))
+            ))))
+#|
+(parse-body-children str)
+Given the body of an HTML element, this function will parse
+the element if it contains children
+
+(parse-body-children "<span class=\"red\">text goes here</span>")
+"yes children"
+|#
+(define (parse-body-children str) 
+  (let ([html-no-space (string-replace str " " "")])
+    (if (equal? (string-length html-no-space) 0)
+        (parse-body-text str)
+        (if (equal? (substring html-no-space 0 1) "<")
+            "yes children" ; parse the tag element aka do everything again
+            (parse-body-text str) ;this html element only contains text, so call the other function
+  ))))
+
+#|
+(parse-body-text str)
+Given the body of an HTML element, this function will 
+return the body text of the element
+
+> (parse-body-text "hello")
+"hello"
+
+|#
+(define (parse-body-text str) 
+  (if (string? str)
+      str
+      '(error)))
+
+
 
 
 
