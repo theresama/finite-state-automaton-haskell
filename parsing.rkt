@@ -260,6 +260,24 @@ If the tag name is invalid it returns
      '(error)))
 
 #|
+(parse-name lst)
+- returns the name as a string
+- returns attributes as a string
+"p" "id=\"main\" class=\"super\">\" "Hey</p>\""
+
+input: "<p id=\"main\" class=\"super\">"
+get the name by split before first whitespace
+
+returns whole string of attributes
+attributes = substring after name
+"    name="hello  "    class="  no" "
+
+'("p" "    "id=\"main\" class=\"super\"")
+
+
+|#
+
+#|
 (parse-attributes str)
 This is an attribute parser. It parses the attributes
   of a given opening tag. It returns a list of the
@@ -269,8 +287,11 @@ This is an attribute parser. It parses the attributes
 If the attributes are invalid it returns
   (list 'error str) instead.
 
-> (parse-attributes "class="heading" id="special"")
-(("class" "heading")("id" "special"))
+> (parse-attributes '("    name=\"hello  \"    class=\"  no\" "))
+'(("name" "hello")("class" "no"))
+
+'("p" "    "id=\"main\" class=\"super\"")
+'(("id" "main")("class" "super"))
 
 
 |#
@@ -279,9 +300,11 @@ If the attributes are invalid it returns
 #|
 (parse-one-attribute str)
 Helper function for parse-attributes
+takes in string
+returns list
 
 > (parse-one-attribute "class="heading"")
-("class" "heading")
+'("class" "heading")
 
 |#
 (define (parse-one-attribute str)(void))
