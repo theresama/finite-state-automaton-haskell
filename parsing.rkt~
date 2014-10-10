@@ -18,7 +18,7 @@ Theresa Ma 999596343, g2potato
          
          either both star
          
-         parse-html is-white? is-special? find-tag parse-closing-tag)
+         parse-html is-white? is-special?)
 
 
 
@@ -284,37 +284,46 @@ This is a closing tag parser. It finds the matching closing tag and
 If the string does not start contain valid open and closing tags, return
   (list 'error str) instead.
 
-> (parse-closing-tag "p" "<span class=\"red\">text goes here</span></p><div></div></body>")
-"<span class=\"red\">text goes here</span>"
+- recursively search through str, starting from the end to find </tag-name>
+let closing-tag = (string-append "</" tag-name "<")
+let last-index-to-search = (string-length str)
+let first-index-to-search = (last-index-to-search - (string-length closing-tag))
 
+if (substring first-index-to-search last-index-to-search) = closing-tag
+  return (substring 0 first-index-to-search)
+
+else
+ findTag(last-index-to-search - 1, first-index-to-search - 1)
 |#
 
-(define (parse-closing-tag tag-name str)
-  (let ([closing-tag (string-append "</" tag-name ">")])
-    (find-tag closing-tag str)
-  ))
+
+
+(define (parse-closing-tag str tag-name)
+  (void)  
+  )
 
 #|
 (find-tag first-index last-index)
-Finds the last occurence of a tag and returns all its children
-
-If no closing tag is found, an error is returned
-
-> (find-tag "</p>" "<span class=\"red\">text goes here</span></p><div></div></body>")
-"<span class=\"red\">text goes here</span>"
+Finds the last occurence of a tag
 
 |#
-
+#|(define (find-tag first-index last-index) 
+  (lambda (tag html)
+    (if (equal? last-index 0)
+        '(error)
+        (if (equal? (substring html first-index last-index) tag)
+            (substring html 0 first-index)
+            ((find-tag (- first-index 1) (- last-index 1)) tag html)
+    ))))|#
+    
 (define (find-tag tag html)
   (let* ([tag-length (string-length tag)]
         [html-length (string-length html)]
         [first-index (- html-length tag-length)])
-    (if (< first-index 0)
-        '(error)
-        (if (equal? (substring html first-index html-length) tag)
-            (substring html 0 first-index)
-            (find-tag tag (substring html 0 (- html-length 1)))
-            ))))
+    (if (equal? (substring html first-index html-length) tag)
+        (substring html 0 first-index)
+        (find-tag tag (substring html 0 (- html-length 1)))
+        )))
 
 ;gets text
 (define (get-text str) (void))
