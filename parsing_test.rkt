@@ -22,15 +22,19 @@ Theresa Ma 999596343, g2potato
 
 (check-expect (is-special? #\<) #t) 
 (check-expect (is-special? "H") #f)
+(check-expect (is-special? "") #f)
 
 (check-expect (is-white? #\space) #t) 
 (check-expect (is-white? "asdf") #f)
+(check-expect (is-white? "") #f)
 
 (check-expect (parse-non-special-char "hi") '(#\h "i")) 
 (check-expect (parse-non-special-char "<html>") '(error "<html>"))
+(check-expect (parse-non-special-char "") '(error "")) 
 
 (check-expect (parse-plain-char "hi") '(#\h "i")) 
 (check-expect (parse-plain-char " hello!") '(error " hello!"))
+(check-expect (parse-plain-char "") '(error ""))
 
 (check-expect ((either parse-plain-char parse-html-tag) "hello") '(#\h "ello"))
 (check-expect ((either parse-plain-char parse-html-tag) "<html>hello") '("<html>" "hello")) 
@@ -51,6 +55,9 @@ Theresa Ma 999596343, g2potato
 (check-expect (parse-closing-tag "p" "<span class=\"red\">text goes here</span></p><div></div></body>") "<span class=\"red\">text goes here</span>") 
 (check-expect (parse-closing-tag "p" "<span class=\"red\">text goes here</span><div></div></body>") '(error))
 (check-expect (parse-closing-tag "h1" "") '(error))
+
+(check-expect (parse-body-children "       <h1>stuff goes in here</h1>") "yes children")
+
 
 
 

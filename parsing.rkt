@@ -12,13 +12,11 @@ Theresa Ma 999596343, g2potato
 
 #lang racket
 
-(provide parse-html-tag make-text-parser
-         
-         parse-non-special-char parse-plain-char
-         
+(provide parse-html-tag make-text-parser        
+         parse-non-special-char parse-plain-char   
          either both star
-         
-         parse-html is-white? is-special? find-tag parse-closing-tag)
+         parse-html is-white? is-special? find-tag parse-closing-tag
+         parse-body-children parse-body-text)
 
 
 
@@ -71,12 +69,14 @@ Theresa Ma 999596343, g2potato
 '(error "<html>")
 |#
 
-(define (parse-non-special-char str) 
-  (let ([f-letter (string-ref str 0)])
-    (if (is-special? f-letter)
-        (list 'error str)
-        (list f-letter (substring str 1))
-        )))
+(define (parse-non-special-char str)
+  (if (equal? (string-length str) 0)
+      (list 'error str)
+      (let ([f-letter (string-ref str 0)])
+        (if (is-special? f-letter)
+            (list 'error str)
+            (list f-letter (substring str 1)) 
+            ))))
 #|
 
 (parse-plain-char str)
@@ -328,7 +328,7 @@ the element if it contains children
     (if (equal? (string-length html-no-space) 0)
         (parse-body-text str)
         (if (equal? (substring html-no-space 0 1) "<")
-            "yes children" ; parse the tag element aka do everything again
+            "yes children" ; parse str aka do everything again
             (parse-body-text str) ;this html element only contains text, so call the other function
   ))))
 
