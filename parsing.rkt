@@ -286,13 +286,44 @@ If the string does not start contain valid open and closing tags, return
 
 - recursively search through str, starting from the end to find </tag-name>
 let closing-tag = (string-append "</" tag-name "<")
+let last-index-to-search = (string-length str)
+let first-index-to-search = (last-index-to-search - (string-length closing-tag))
 
+if (substring first-index-to-search last-index-to-search) = closing-tag
+  return (substring 0 first-index-to-search)
 
+else
+ findTag(last-index-to-search - 1, first-index-to-search - 1)
 |#
+
+
+
 (define (parse-closing-tag str tag-name)
-  
   (void)  
   )
+
+#|
+(find-tag first-index last-index)
+Finds the last occurence of a tag
+
+|#
+#|(define (find-tag first-index last-index) 
+  (lambda (tag html)
+    (if (equal? last-index 0)
+        '(error)
+        (if (equal? (substring html first-index last-index) tag)
+            (substring html 0 first-index)
+            ((find-tag (- first-index 1) (- last-index 1)) tag html)
+    ))))|#
+    
+(define (find-tag tag html)
+  (let* ([tag-length (string-length tag)]
+        [html-length (string-length html)]
+        [first-index (- html-length tag-length)])
+    (if (equal? (substring html first-index html-length) tag)
+        (substring html 0 first-index)
+        (find-tag tag (substring html 0 (- html-length 1)))
+        )))
 
 ;gets text
 (define (get-text str) (void))
