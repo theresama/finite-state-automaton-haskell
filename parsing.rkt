@@ -362,33 +362,23 @@ If the string does not start contain valid open and closing tags, return
 
 |#
 
-(define (parse-closing str tag counter)
+(define (parse-closing str tag counter init)
   (let* ([closing-tag (string-append "</" tag ">")]
          [opening-tag (string-append "<" tag)]
          [closing-length (string-length closing-tag)]
          [opening-length (string-length opening-tag)]
          )
-    (if (< (string-length str) closing-length)
-        '(error)
-        (if (equal? (substring str 0 opening-length) opening-tag)
-            (let ([rec-1 (parse-closing (substring str 1) tag (+ counter 1))])
-              (if (equal? rec-1 '(error))
-                  '(error)
-                  (string-append (substring str 0 1) rec-1)))
-            (if (equal? (substring str 0 closing-length) closing-tag)
+    (if (< (string-length (substring str init (string-length str))) closing-length)
+        ""
+        (if (equal? (substring str init (+ opening-length init)) opening-tag)
+            (parse-closing str tag (+ counter 1) (+ 1 init))
+            (if (equal? (substring str init (+ closing-length init)) closing-tag)
                 (if (equal? counter 0)
-                    ""
-                    (let ([rec-2 (parse-closing (substring str 1) tag (- counter 1))])
-                      (if (equal? rec-2 '(error))
-                          '(error)
-                          (string-append (substring str 0 1) rec-2))))
-                (let ([rec-3 (parse-closing (substring str 1) tag counter)])
-                  (if (equal? rec-3 '(error))
-                      '(error)
-                      (string-append (substring str 0 1)(parse-closing (substring str 1) tag counter ))))
-                )
-            )
-        )))
+                    (substring str 0 init)
+                    (parse-closing str tag (- counter 1) (+ 1 init)))
+                (parse-closing str tag counter (+ 1 init )))
+        )
+    )))
 
 
 
