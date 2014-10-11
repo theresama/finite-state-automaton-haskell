@@ -231,19 +231,19 @@ Theresa Ma 999596343, g2potato
 > (parse-html "<body><p>Not good</body></p>")
 '(error "<body><p>Not good</body></p>")
 
+>(parse-html "<body><p>please work</p><p>probably not</p></body>")
+
 |#
 
 (define (parse-html str)
   (let* ([tag (parse-opening-tag str)]
          [name (parse-name (first tag))]
          [attributes (parse-attributes (second name))]
-         [body (parse-closing (second tag) (first name) 0)])
+         [body (parse-closing (second tag) (first name) 0 0)])
     (if (has-children? body)
-        ;(list (first name) attributes (parse-html body))
-        ;(list (first name) attributes body))
-        "has chidlren"
-        "no children"
-        )))
+        (list (first name) attributes (parse-html body))
+        (list (first name) attributes body (second tag)))
+        ))
 
 
 
@@ -354,7 +354,7 @@ If the string does not start contain valid open and closing tags, return
 > (parse-closing "Hey</p>" "p" 0) 
 "Hey"
 
-> (parse-closing "<span id=\"help\">Hey</span></p>" "p" 0)
+> (parse-closing "<span id=\"help\">Hey</span></p>" "p" 0 0)
 "<span id=\"help\">Hey</span>"
 
 > (parse-closing "<p id=\"help\">Hey</p></p><p><p></p></p>" "p" 0)
