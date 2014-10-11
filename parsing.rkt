@@ -260,12 +260,12 @@ If the tag name is invalid it returns
      '(error)))
 
 #|
-(parse-name lst)
+(parse-name str)
 - returns the name as a string
 - returns attributes as a string
 "p" "id=\"main\" class=\"super\">\" "Hey</p>\""
 
-input: "<p id=\"main\" class=\"super\">"
+input: (parse-name "<p id=\"main\" class=\"super\">")
 get the name by split before first whitespace
 
 returns whole string of attributes
@@ -273,9 +273,21 @@ attributes = substring after name
 "    name="hello  "    class="  no" "
 
 '("p" "    "id=\"main\" class=\"super\"")
-
-
+        [first (second(string-split(string-normalize-spaces (first lst)) " "))]
+        [newlst (append (list first) (rest lst))]
+        [index1 (filter even? (build-list (length newlst) values))]
+        [index2 (filter odd? (build-list (length newlst) values))])
+    (map (lambda (index)
+           (list-ref newlst index)) index2)
 |#
+(define (parse-name str)
+  (let* ([lst (remove ">" (string-split str "\""))]
+        [tag (first(string-split(string-normalize-spaces (first lst)) " "))])
+    (list (substring tag 1) (substring str (string-length tag) (- (string-length str) 1)))
+
+  ))
+
+
 
 #|
 (parse-attributes str)
