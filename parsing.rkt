@@ -14,9 +14,10 @@ Theresa Ma 999596343, g2potato
 
 (provide parse-html-tag make-text-parser        
          parse-non-special-char parse-plain-char   
-         either both star
-         parse-html is-white? is-special? find-tag parse-closing-tag
-         parse-body-children parse-body-text)
+         either both star parse-list-attribute-value
+         parse-html is-white? is-special? parse-closing
+         has-children? parse-text parse-attributes parse-name
+         parse-opening-tag)
 
 
 
@@ -232,7 +233,18 @@ Theresa Ma 999596343, g2potato
 
 |#
 
-(define (parse-html str) (void))
+(define (parse-html str)
+  (let* ([tag (parse-opening-tag str)]
+         [name (parse-name (first tag))]
+         [attributes (parse-attributes (second name))]
+         [body (parse-closing (second tag) (first name) 0)])
+    (if (has-children? body)
+        ;(list (first name) attributes (parse-html body))
+        ;(list (first name) attributes body))
+        "has chidlren"
+        "no children"
+        )))
+
 
 
 #|
@@ -257,7 +269,7 @@ If the tag name is invalid it returns
   (if(equal? (substring str 0 1) "<")
      (let ([html-tag (string-append (first (string-split str ">")) ">")])
        (list html-tag (substring str (string-length html-tag))))
-     '(error)))
+     '(error, str)))
 
 #|
 (parse-name str)
@@ -281,11 +293,10 @@ attributes = substring after name
            (list-ref newlst index)) index2)
 |#
 (define (parse-name str)
-  (let* ([lst (remove ">" (string-split str "\""))]
-        [tag (first(string-split(string-normalize-spaces (first lst)) " "))])
-    (list (substring tag 1) (substring str (string-length tag) (- (string-length str) 1)))
-
-  ))
+  (let ([tag (string-replace (string-replace(first(string-split str " ")) "<" "") ">" "")])
+    (list tag (substring str (+ (string-length tag) 1) (- (string-length str) 1)))   
+    
+    ))
 
 
 
@@ -311,7 +322,7 @@ ex: taking in " id   =  \" main \"   class=\"super\""
 |#
 (define (parse-attributes str) 
   (let* ([split-attributes-values (string-split str "\"")] ;returns a list
-    [attributes (parse-list-attribute-value split-attributes-values)])
+         [attributes (parse-list-attribute-value split-attributes-values)])
     attributes
     ))
 
@@ -328,62 +339,79 @@ takes in a list of attribute/value
       (let ([attribute (string-replace (string-replace (first lst) " " "") "=" "")]
             [value (first (rest lst))])
         (cons (list attribute value) (parse-list-attribute-value (rest (rest lst)))
-        ))))
-  
-#|
-(parse-one-attribute attr val)
-Helper function for parse-attributes
-takes in two strings
-returns list
+              ))))
 
-> (parse-one-attribute "class" "heading"")
-'("class" "heading")
-
-|#
-(define (parse-one-attribute attr val)
-  '(attr val)
-  )
 
 
 #|
-(parse-closing-tag str)
+(parse-closing str)
 This is a closing tag parser. It finds the matching closing tag and 
   returns all the children elements of the given tag as a string
 
 If the string does not start contain valid open and closing tags, return
   (list 'error str) instead.
 
-> (parse-closing-tag "p" "<span class=\"red\">text goes here</span></p><div></div></body>")
-"<span class=\"red\">text goes here</span>"
+> (parse-closing "Hey</p>" "p" 0) 
+"Hey"
+
+> (parse-closing "<span id=\"help\">Hey</span></p>" "p" 0)
+"<span id=\"help\">Hey</span>"
+
+> (parse-closing "<p id=\"help\">Hey</p></p><p><p></p></p>" "p" 0)
+"<p id=\"help\">Hey</p>"
 
 |#
 
-(define (parse-closing-tag tag-name str)
-  (let ([closing-tag (string-append "</" tag-name ">")])
-    (find-tag closing-tag str)
-  ))
+(define (parse-closing str tag counter)
+  (let* ([closing-tag (string-append "</" tag ">")]
+         [opening-tag (string-append "<" tag)]
+         [closing-length (string-length closing-tag)]
+         [opening-length (string-length opening-tag)]
+         )
+    (if (< (string-length str) closing-length)
+        '(error)
+        (if (equal? (substring str 0 opening-length) opening-tag)
+            (let ([rec-1 (parse-closing (substring str 1) tag (+ counter 1))])
+              (if (equal? rec-1 '(error))
+                  '(error)
+                  (string-append (substring str 0 1) rec-1)))
+            (if (equal? (substring str 0 closing-length) closing-tag)
+                (if (equal? counter 0)
+                    ""
+                    (let ([rec-2 (parse-closing (substring str 1) tag (- counter 1))])
+                      (if (equal? rec-2 '(error))
+                          '(error)
+                          (string-append (substring str 0 1) rec-2))))
+                (let ([rec-3 (parse-closing (substring str 1) tag counter)])
+                  (if (equal? rec-3 '(error))
+                      '(error)
+                      (string-append (substring str 0 1)(parse-closing (substring str 1) tag counter ))))
+                )
+            )
+        )))
+
+
 
 #|
-(find-tag first-index last-index)
-Finds the last occurence of a tag and returns all its children
+(parse-body-text str)
+Given the body of an HTML element, this function will 
+return the body text of the element
 
-If no closing tag is found, an error is returned
-
-> (find-tag "</p>" "<span class=\"red\">text goes here</span></p><div></div></body>")
-"<span class=\"red\">text goes here</span>"
+> (parse-text "hello")
+"hello"
 
 |#
+(define (parse-text str) 
+  (if (equal? (string-length str) 0)
+      str
+      (if (equal? (substring (string-replace str " " "") 0 1) "<")
+          (list 'error str)
+          str
+          )
+      ))
 
-(define (find-tag tag html)
-  (let* ([tag-length (string-length tag)]
-        [html-length (string-length html)]
-        [first-index (- html-length tag-length)])
-    (if (< first-index 0)
-        '(error)
-        (if (equal? (substring html first-index html-length) tag)
-            (substring html 0 first-index)
-            (find-tag tag (substring html 0 (- html-length 1)))
-            ))))
+
+
 #|
 (parse-body-children str)
 Given the body of an HTML element, this function will parse
@@ -392,29 +420,14 @@ the element if it contains children
 (parse-body-children "<span class=\"red\">text goes here</span>")
 "yes children"
 |#
-(define (parse-body-children str) 
+(define (has-children? str) 
   (let ([html-no-space (string-replace str " " "")])
     (if (equal? (string-length html-no-space) 0)
-        (parse-body-text str)
+        #f
         (if (equal? (substring html-no-space 0 1) "<")
-            "yes children" ; parse str aka do everything again
-            (parse-body-text str) ;this html element only contains text, so call the other function
-  ))))
-
-#|
-(parse-body-text str)
-Given the body of an HTML element, this function will 
-return the body text of the element
-
-> (parse-body-text "hello")
-"hello"
-
-|#
-(define (parse-body-text str) 
-  (if (string? str)
-      str
-      '(error)))
-
+            #t
+            #f ;this html element only contains text, so call the other function
+            ))))
 
 
 

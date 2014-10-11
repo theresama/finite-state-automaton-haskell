@@ -48,15 +48,13 @@ Theresa Ma 999596343, g2potato
 (check-expect ((star parse-plain-char) "hi there") '((#\h #\i) " there"))
 (check-expect ((star parse-plain-char) "<html>hi") '(() "<html>hi"))
 
-(check-expect (find-tag "</p>" "<span class=\"red\">text goes here</span></p><div></div></body>") "<span class=\"red\">text goes here</span>") 
-(check-expect (find-tag "</p>" "<span class=\"red\">text goes here</span><div></div></body>") '(error))
-(check-expect (find-tag "</h1>" "") '(error))
 
-(check-expect (parse-closing-tag "p" "<span class=\"red\">text goes here</span></p><div></div></body>") "<span class=\"red\">text goes here</span>") 
-(check-expect (parse-closing-tag "p" "<span class=\"red\">text goes here</span><div></div></body>") '(error))
-(check-expect (parse-closing-tag "h1" "") '(error))
+(check-expect (parse-closing "<span class=\"red\">text goes here</span></p><div></div></body>" "p" 0) "<span class=\"red\">text goes here</span>") 
+;(check-expect (parse-closing "<span class=\"red\">text goes here</span><div></div></body>" "p" 0) '(error))
+;(check-expect (parse-closing "" "h1" 0) '(error))
+;(check-expect (parse-closing "<span class=\"red\">text goes here</span><div></div></body>" "p" 0) '(error))
 
-(check-expect (parse-body-children "       <h1>stuff goes in here</h1>") "yes children")
+
 
 
 
