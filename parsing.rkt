@@ -239,15 +239,21 @@ Theresa Ma 999596343, g2potato
   (let* ([tag (parse-opening-tag str)]
          [name (parse-name (first tag))]
          [attributes (parse-attributes (second name))]
-         [body (parse-closing (second tag) (first name) 0 0)])
-    (if (has-children? body)
-        (list (list (first name) attributes (parse-html body)) "Other" ) 
-        (list (first name) attributes body) 
-        )))
-
-
-
-#|
+         [body (parse-closing (second tag) (first name))])
+    (if (or (equal? body '(error)) (equal? body ""))
+        '(error)
+        (if (has-children? (first body))
+            (let ([parse-children (parse-html (first body))])
+              (if (equal? parse-children '(error))
+                  (list 'error str)
+                  (list (list (first name) attributes (parse-html (first body))) (second body)))) 
+            (if (equal? (first body) "")
+                (list (first name) attributes (first body) (second body))
+                (list (first name) attributes (first body)))
+            ))))
+  
+  
+  #|
 (parse-opening-tag str)
 This is an opening tag parser. It parses an opening tag and 
   returns a pair where the fisrt element is
@@ -265,13 +271,13 @@ If the tag name is invalid it returns
 >(parse-opening-tag "<p id=\"main\" class=\"super\">Hey</p>")
 
 |#
-(define (parse-opening-tag str)
-  (if (equal? (substring str 0 1) "<")
-     (let ([html-tag (string-append (first (string-split str ">")) ">")])
-       (list html-tag (substring str (string-length html-tag))))
-     '(error, str)))
-
-#|
+  (define (parse-opening-tag str)
+    (if (equal? (substring str 0 1) "<")
+        (let ([html-tag (string-append (first (string-split str ">")) ">")])
+          (list html-tag (substring str (string-length html-tag))))
+        '(error, str)))
+  
+  #|
 (parse-name str)
 - returns the name as a string
 - returns attributes as a string
@@ -292,15 +298,15 @@ attributes = substring after name
     (map (lambda (index)
            (list-ref newlst index)) index2)
 |#
-(define (parse-name str)
-  (let ([tag (string-replace (string-replace(first(string-split str " ")) "<" "") ">" "")])
-    (list tag (substring str (+ (string-length tag) 1) (- (string-length str) 1)))   
-    
-    ))
-
-
-
-#|
+  (define (parse-name str)
+    (let ([tag (string-replace (string-replace(first(string-split str " ")) "<" "") ">" "")])
+      (list tag (substring str (+ (string-length tag) 1) (- (string-length str) 1)))   
+      
+      ))
+  
+  
+  
+  #|
 (parse-attributes str)
 This is an attribute parser. It parses the attributes
   of a given opening tag. It returns a list of the
@@ -320,30 +326,30 @@ If the attributes are invalid it returns
 ex: taking in " id   =  \" main \"   class=\"super\""
 
 |#
-(define (parse-attributes str) 
-  (let* ([split-attributes-values (string-split str "\"")] ;returns a list
-         [attributes (parse-list-attribute-value split-attributes-values)])
-    attributes
-    ))
-
-#|
+  (define (parse-attributes str) 
+    (let* ([split-attributes-values (string-split str "\"")] ;returns a list
+           [attributes (parse-list-attribute-value split-attributes-values)])
+      attributes
+      ))
+  
+  #|
 parse-list-attribute-value
 
 takes in a list of attribute/value 
 
 |#  
-
-(define (parse-list-attribute-value lst)
-  (if (or (empty? lst) (< (length lst) 2))
-      '()
-      (let ([attribute (string-replace (string-replace (first lst) " " "") "=" "")]
-            [value (first (rest lst))])
-        (cons (list attribute value) (parse-list-attribute-value (rest (rest lst)))
-              ))))
-
-
-
-#|
+  
+  (define (parse-list-attribute-value lst)
+    (if (or (empty? lst) (< (length lst) 2))
+        '()
+        (let ([attribute (string-replace (string-replace (first lst) " " "") "=" "")]
+              [value (first (rest lst))])
+          (cons (list attribute value) (parse-list-attribute-value (rest (rest lst)))
+                ))))
+  
+  
+  
+  #|
 (parse-closing str)
 This is a closing tag parser. It finds the matching closing tag and 
   returns all the children elements of the given tag as a string
@@ -354,35 +360,42 @@ If the string does not start contain valid open and closing tags, return
 > (parse-closing "Hey</p>" "p" 0) 
 "Hey"
 
-> (parse-closing "<span id=\"help\">Hey</span></p>" "p" 0 0)
+> (parse-closing "<span id=\"help\">Hey</span></p>" "p")
 "<span id=\"help\">Hey</span>"
 
-> (parse-closing "<p id=\"help\">Hey</p></p><p><p></p></p>" "p" 0)
+> (parse-closing "<p id=\"help\">Hey</p></p><p><p></p></p>" "p")
 "<p id=\"help\">Hey</p>"
 
 |#
-
-(define (parse-closing str tag counter init)
-  (let* ([closing-tag (string-append "</" tag ">")]
-         [opening-tag (string-append "<" tag)]
-         [closing-length (string-length closing-tag)]
-         [opening-length (string-length opening-tag)]
-         )
-    (if (< (string-length (substring str init (string-length str))) closing-length)
-        ""
-        (if (equal? (substring str init (+ opening-length init)) opening-tag)
-            (parse-closing str tag (+ counter 1) (+ 1 init))
-            (if (equal? (substring str init (+ closing-length init)) closing-tag)
-                (if (equal? counter 0)
-                    (substring str 0 init)
-                    (parse-closing str tag (- counter 1) (+ 1 init)))
-                (parse-closing str tag counter (+ 1 init )))
-        )
-    )))
-
-
-
-#|
+  
+  (define (parse-closing str tag)
+    (parse-closing-helper str tag 0 0)
+    )
+  
+  (define (parse-closing-helper str tag counter init)
+    (let* ([closing-tag (string-append "</" tag ">")]
+           [opening-tag (string-append "<" tag)]
+           [closing-length (string-length closing-tag)]
+           [opening-length (string-length opening-tag)]
+           )
+      (if (< (string-length (substring str init (string-length str))) closing-length)
+          ""
+          (if (equal? (substring str init (+ opening-length init)) opening-tag)
+              (parse-closing-helper str tag (+ counter 1) (+ 1 init))
+              (if (equal? (substring str init (+ closing-length init)) closing-tag)
+                  (if (equal? counter 0)
+                      (list (substring str 0 init) (substring str (+ init closing-length)))
+                      (parse-closing-helper str tag (- counter 1) (+ 1 init)))
+                  (if (= (string-length (substring str init (string-length str))) closing-length)
+                      '(error)
+                      (parse-closing-helper str tag counter (+ 1 init ))))
+              )
+          ))
+    )
+  
+  
+  
+  #|
 (parse-body-text str)
 Given the body of an HTML element, this function will 
 return the body text of the element
@@ -391,18 +404,18 @@ return the body text of the element
 "hello"
 
 |#
-(define (parse-text str) 
-  (if (equal? (string-length str) 0)
-      str
-      (if (equal? (substring (string-replace str " " "") 0 1) "<")
-          (list 'error str)
-          str
-          )
-      ))
-
-
-
-#|
+  (define (parse-text str) 
+    (if (equal? (string-length str) 0)
+        str
+        (if (equal? (substring (string-replace str " " "") 0 1) "<")
+            (list 'error str)
+            str
+            )
+        ))
+  
+  
+  
+  #|
 (parse-body-children str)
 Given the body of an HTML element, this function will parse
 the element if it contains children
@@ -410,15 +423,16 @@ the element if it contains children
 (parse-body-children "<span class=\"red\">text goes here</span>")
 "yes children"
 |#
-(define (has-children? str) 
-  (let ([html-no-space (string-replace str " " "")])
-    (if (equal? (string-length html-no-space) 0)
-        #f
-        (if (equal? (substring html-no-space 0 1) "<")
-            #t
-            #f ;this html element only contains text, so call the other function
-            ))))
-
-
-
-
+  (define (has-children? str) 
+    (let ([html-no-space (string-replace str " " "")])
+      (if (equal? (string-length html-no-space) 0)
+          #f
+          (if (equal? (substring html-no-space 0 1) "<")
+              #t
+              #f ;this html element only contains text, so call the other function
+              ))))
+  
+  
+  
+  
+  
