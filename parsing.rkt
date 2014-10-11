@@ -234,7 +234,7 @@ Theresa Ma 999596343, g2potato
 '(error "<body><p>Not good</body></p>")
 
 >(parse-html "<body><p>please work</p><p>probably not</p></body>")
-
+'(error "<body><p>please work</p><p>probably not</p></body>")
 |#
 
 (define (parse-html str)
@@ -259,8 +259,8 @@ Theresa Ma 999596343, g2potato
                   (list 'error str)
                   (list (list (first name) attributes parse-first-child second-body)))) 
             (if (equal? (first body) "")
-                (list (list (first name) attributes first-body )second-body)
-                (list (first name) attributes first-body))
+                (list (list (first name) attributes first-body )  second-body)
+                (list (first name) attributes first-body ))
             ))))
 
 
