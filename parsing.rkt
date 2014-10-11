@@ -440,5 +440,3 @@ the element if it contains children
 (define (has-sibling? str) 
   (void)
   )
-
-
