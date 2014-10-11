@@ -205,6 +205,8 @@ Theresa Ma 999596343, g2potato
           (list (append (list (first result)) (first ((star parser) (second result)))) (second ((star parser) (second result)))))
       )))
 
+
+
 #|
 (parse-html str)
   Parse HTML content at the beginning of str, returning (list data rest),
@@ -242,7 +244,7 @@ Theresa Ma 999596343, g2potato
          [body (parse-closing (second tag) (first name))]
          [first-body (first body)]
          [second-body (second body)])
-    (if (or (equal? body '(error)) (equal? body ""))
+    (if (or (equal? (first body) 'error) (equal? body ""))
         '(error)
         (if (has-children? (first body))
             (let* ([parse-first-child (parse-html first-body)])
@@ -381,7 +383,8 @@ If the string does not start contain valid open and closing tags, return
          [opening-length (string-length opening-tag)]
          )
     (if (< (string-length (substring str init (string-length str))) closing-length)
-        ""
+        ;this is base case, "" should be returned when we have found closing tag
+        (list 'error str)
         (if (equal? (substring str init (+ opening-length init)) opening-tag)
             (parse-closing-helper str tag (+ counter 1) (+ 1 init))
             (if (equal? (substring str init (+ closing-length init)) closing-tag)
@@ -389,7 +392,7 @@ If the string does not start contain valid open and closing tags, return
                     (list (substring str 0 init) (substring str (+ init closing-length)))
                     (parse-closing-helper str tag (- counter 1) (+ 1 init)))
                 (if (= (string-length (substring str init (string-length str))) closing-length)
-                    '(error)
+                    (list 'error str)
                     (parse-closing-helper str tag counter (+ 1 init ))))
             )
         ))
@@ -437,6 +440,5 @@ the element if it contains children
 (define (has-sibling? str) 
   (void)
   )
-
 
 
