@@ -242,7 +242,7 @@ Theresa Ma 999596343, g2potato
          [body (parse-closing (second tag) (first name) 0 0)])
     (if (has-children? body)
         (list (list (first name) attributes (parse-html body)) "Other" ) 
-        (list (list (first name) attributes body) "other stuff")
+        (list (first name) attributes body) 
         )))
 
 
@@ -259,7 +259,7 @@ If the tag name is invalid it returns
   (list 'error str) instead.
 
 >(parse-opening-tag "<body> hey")
-'("<body>" " hey")
+'("<body>" " hey")(parse-html "<html><body class=\"hello\" >Hello, world!</body></html> Other")
 >(parse-opening-tag "body> hey")
 '(error "body> hey")
 >(parse-opening-tag "<p id=\"main\" class=\"super\">Hey</p>")
