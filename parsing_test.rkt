@@ -48,19 +48,32 @@ Theresa Ma 999596343, g2potato
 (check-expect ((star parse-plain-char) "hi there") '((#\h #\i) " there"))
 (check-expect ((star parse-plain-char) "<html>hi") '(() "<html>hi"))
 
+(check-expect (parse-html "<body><p>Not good</body></p>") '(error "<body><p>Not good</body></p>"))
+(check-expect (parse-html "") '(error ""))
+(check-expect (parse-html "<html><body><p id=\"main\" class=\"super\">Hey</p></body></html>") '(("html" () (("body" () ("p" (("id" "main") ("class" "super")) "Hey") "")) "")))
+(check-expect (parse-html "<body i d=\"main\" class=\"super\" ><p>Not good</p></body>") )
+
+(check-expect (find-error '(1 2 3)) #f)
+(check-expect (find-error '(1 2 error)) #t)
+(check-expect (find-error '((1 2) ("hey" error))) #t)
+
+(check-expect (parse-opening-tag "<body> hey") '("<body>" " hey"))
+(check-expect (parse-opening-tag "body> hey") '(error "body> hey"))
+(check-expect (parse-opening-tag "<p id=\"main\" class=\"super\">Hey</p>") '("<p id=\"main\" class=\"super\">" "Hey</p>"))
+(check-expect (parse-opening-tag "") '(error ""))
+(check-expect (parse-opening-tag "<p><p>hey</p></p>") '("<p>" "<p>hey</p></p>"))
+
+(check-expect (parse-name "<body>") '("body" ""))
+(check-expect (parse-name "<p id=\"main\" class=\"super\">") '("p" " id=\"main\" class=\"super\""))
+(check-expect (parse-name '(error "<body>")) '(error (error "<body>")))
 
 (check-expect (parse-closing "<span class=\"red\">text goes here</span></p><div></div></body>" "p") '("<span class=\"red\">text goes here</span>" "<div></div></body>")) 
-(check-expect (parse-closing "<span class=\"red\">text goes here</span><div></div></body>" "p") '(error))
-(check-expect (parse-closing "" "h1") '(error))
-(check-expect (parse-closing "<span class=\"red\">text goes here</span><div></div></body>" "p") '(error))
-(check-expect (parse-closing "<p></p>" "p") '(error))
+(check-expect (parse-closing "<span class=\"red\">text goes here</span><div></div></body>" "p") '(error "<span class=\"red\">text goes here</span><div></div></body>"))
+(check-expect (parse-closing "" "h1") '(error ""))
+(check-expect (parse-closing "<span class=\"red\">text goes here</span><div></div></body>" "p") '(error "<span class=\"red\">text goes here</span><div></div></body>"))
+(check-expect (parse-closing "<p></p>" "p") '(error "<p></p>"))
 (check-expect (parse-closing "<p id=\"help\">Hey</p></p><p><p></p></p>" "p") '("<p id=\"help\">Hey</p>" "<p><p></p></p>"))
 (check-expect (parse-closing "</p>" "p") '("" ""))
-
-
-
-
-
 
 
 (test)

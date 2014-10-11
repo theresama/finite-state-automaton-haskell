@@ -17,7 +17,7 @@ Theresa Ma 999596343, g2potato
          either both star parse-list-attribute-value
          parse-html is-white? is-special? parse-closing
          has-children? parse-text parse-attributes parse-name
-         parse-opening-tag)
+         parse-opening-tag find-error parse-main)
 
 
 
@@ -205,8 +205,6 @@ Theresa Ma 999596343, g2potato
           (list (append (list (first result)) (first ((star parser) (second result)))) (second ((star parser) (second result)))))
       )))
 
-
-
 #|
 (parse-html str)
   Parse HTML content at the beginning of str, returning (list data rest),
@@ -238,6 +236,13 @@ Theresa Ma 999596343, g2potato
 |#
 
 (define (parse-html str)
+  (let ([result (parse-main str)])
+    (if (find-error result)
+        (list 'error str)
+        (append(take result (-(length result)1))(list(list-ref result (-(length result)1)))))
+  ))
+
+(define (parse-main str)
   (let* ([tag (parse-opening-tag str)]
          [name (parse-name (first tag))]
          [attributes (parse-attributes (second name))]
@@ -245,22 +250,50 @@ Theresa Ma 999596343, g2potato
          [first-body (first body)]
          [second-body (second body)])
     (if (or (equal? (first body) 'error) (equal? body ""))
-        '(error)
+        (list 'error)
         (if (has-children? (first body))
-            (let* ([parse-first-child (parse-html first-body)])
-              (if (equal? parse-first-child '(error))
+            (let ([parse-first-child (parse-html first-body)])
+              (if (equal? parse-first-child 'error)
                   (list 'error str)
                   (list (list (first name) attributes parse-first-child second-body)))) 
             (if (equal? (first body) "")
-                (list (first name) attributes first-body second-body)
+                (list (list (first name) attributes first-body )second-body)
                 (list (first name) attributes first-body))
             ))))
 
 
 #|
+(find-error lst)
+Returns #t if lst (which could be nested) contains any errors, 
+else returns #f/
+
+>(find-error '(1 2 3))
+#f
+>(find-error '(1 2 error))
+#t
+>(find-error '((1 2) ("hey" error))
+#t
+
+|#
+(define (find-error lst)
+  (if (> (find-error-helper lst 0) 0)
+      #t
+      #f
+      ))
+
+(define (find-error-helper lst counter)
+  (for ([i lst])
+    (if (list? i)
+        (set! counter (+ (find-error-helper i counter) counter))
+        (if (equal? i 'error)
+            (set! counter (+ counter 1))
+            (set! counter (+ counter 0)))))
+  counter)
+
+#|
 (parse-opening-tag str)
 This is an opening tag parser. It parses an opening tag and 
-  returns a pair where the fisrt element is
+  returns a pair where the first element is
   the tag name (containing no whitespace or special 
   characters) as a string and the second element is the rest
   of str that wasn't parsed
@@ -269,44 +302,41 @@ If the tag name is invalid it returns
   (list 'error str) instead.
 
 >(parse-opening-tag "<body> hey")
-'("<body>" " hey")(parse-html "<html><body class=\"hello\" >Hello, world!</body></html> Other")
+'("<body>" " hey")
 >(parse-opening-tag "body> hey")
 '(error "body> hey")
 >(parse-opening-tag "<p id=\"main\" class=\"super\">Hey</p>")
+'("<p id=\"main\" class=\"super\">" "Hey</p>")
 
 |#
 (define (parse-opening-tag str)
-  (if (equal? (substring str 0 1) "<")
-      (let ([html-tag (string-append (first (string-split str ">")) ">")])
-        (list html-tag (substring str (string-length html-tag))))
-      '(error, str)))
+  (if (> (string-length str) 0)
+      (if (equal? (substring str 0 1) "<")
+          (let ([html-tag (string-append (first (string-split str ">")) ">")])
+            (list html-tag (substring str (string-length html-tag))))
+          (list 'error str))
+      (list 'error str)))
 
 #|
 (parse-name str)
-- returns the name as a string
-- returns attributes as a string
-"p" "id=\"main\" class=\"super\">\" "Hey</p>\""
+Takes in an opening tag and returns a pair, where the 
+first element is the name of the tag, and the second is
+a string containing the attributes (not parsed).
+Returns (list 'error str) if input is invalid.
 
-input: (parse-name "<p id=\"main\" class=\"super\">")
-get the name by split before first whitespace
+>(parse-name "<body>")
+'("body" "")
+>(parse-name "<p id=\"main\" class=\"super\">")
+'("p" " id=\"main\" class=\"super\"")
 
-returns whole string of attributes
-attributes = substring after name
-"    name="hello  "    class="  no" "
-
-'("p" "    "id=\"main\" class=\"super\"")
-        [first (second(string-split(string-normalize-spaces (first lst)) " "))]
-        [newlst (append (list first) (rest lst))]
-        [index1 (filter even? (build-list (length newlst) values))]
-        [index2 (filter odd? (build-list (length newlst) values))])
-    (map (lambda (index)
-           (list-ref newlst index)) index2)
 |#
 (define (parse-name str)
-  (let ([tag (string-replace (string-replace(first(string-split str " ")) "<" "") ">" "")])
-    (list tag (substring str (+ (string-length tag) 1) (- (string-length str) 1)))   
-    
-    ))
+  (if (find-error (list str))
+      (list 'error str)
+      (let ([tag (string-replace (string-replace(first(string-split str " ")) "<" "") ">" "")])
+        (list tag (substring str (+ (string-length tag) 1) (- (string-length str) 1)))   
+        
+        )))
 
 
 
@@ -331,10 +361,12 @@ ex: taking in " id   =  \" main \"   class=\"super\""
 
 |#
 (define (parse-attributes str) 
-  (let* ([split-attributes-values (string-split str "\"")] ;returns a list
-         [attributes (parse-list-attribute-value split-attributes-values)])
-    attributes
-    ))
+  (if (find-error (list str))
+      (list 'error str)
+      (let* ([split-attributes-values (string-split str "\"")] ;returns a list
+             [attributes (parse-list-attribute-value split-attributes-values)])
+        attributes
+        )))
 
 #|
 parse-list-attribute-value
@@ -344,12 +376,14 @@ takes in a list of attribute/value
 |#  
 
 (define (parse-list-attribute-value lst)
-  (if (or (empty? lst) (< (length lst) 2))
-      '()
-      (let ([attribute (string-replace (string-replace (first lst) " " "") "=" "")]
-            [value (first (rest lst))])
-        (cons (list attribute value) (parse-list-attribute-value (rest (rest lst)))
-              ))))
+  (if (find-error lst)
+      (list 'error lst)
+      (if (or (empty? lst) (< (length lst) 2))
+          '()
+          (let ([attribute (string-replace (string-replace (first lst) " " "") "=" "")]
+                [value (first (rest lst))])
+            (cons (list attribute value) (parse-list-attribute-value (rest (rest lst)))
+                  )))))
 
 
 
@@ -377,26 +411,27 @@ If the string does not start contain valid open and closing tags, return
   )
 
 (define (parse-closing-helper str tag counter init)
-  (let* ([closing-tag (string-append "</" tag ">")]
-         [opening-tag (string-append "<" tag)]
-         [closing-length (string-length closing-tag)]
-         [opening-length (string-length opening-tag)]
-         )
-    (if (< (string-length (substring str init (string-length str))) closing-length)
-        ;this is base case, "" should be returned when we have found closing tag
-        (list 'error str)
-        (if (equal? (substring str init (+ opening-length init)) opening-tag)
-            (parse-closing-helper str tag (+ counter 1) (+ 1 init))
-            (if (equal? (substring str init (+ closing-length init)) closing-tag)
-                (if (equal? counter 0)
-                    (list (substring str 0 init) (substring str (+ init closing-length)))
-                    (parse-closing-helper str tag (- counter 1) (+ 1 init)))
-                (if (= (string-length (substring str init (string-length str))) closing-length)
-                    (list 'error str)
-                    (parse-closing-helper str tag counter (+ 1 init ))))
-            )
-        ))
-  )
+  (if (or (find-error (list str)) (find-error (list tag)) )
+      (list 'error str)
+      (let* ([closing-tag (string-append "</" tag ">")]
+             [opening-tag (string-append "<" tag)]
+             [closing-length (string-length closing-tag)]
+             [opening-length (string-length opening-tag)]
+             )
+        (if (< (string-length (substring str init (string-length str))) closing-length)
+            (list 'error str)
+            (if (equal? (substring str init (+ opening-length init)) opening-tag)
+                (parse-closing-helper str tag (+ counter 1) (+ 1 init))
+                (if (equal? (substring str init (+ closing-length init)) closing-tag)
+                    (if (equal? counter 0)
+                        (list (substring str 0 init) (substring str (+ init closing-length)))
+                        (parse-closing-helper str tag (- counter 1) (+ 1 init)))
+                    (if (= (string-length (substring str init (string-length str))) closing-length)
+                        (list 'error str)
+                        (parse-closing-helper str tag counter (+ 1 init ))))
+                )
+            ))
+      ))
 
 
 
@@ -440,5 +475,4 @@ the element if it contains children
 (define (has-sibling? str) 
   (void)
   )
-
 
