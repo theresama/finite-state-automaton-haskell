@@ -238,23 +238,28 @@ Theresa Ma 999596343, g2potato
 |#
 
 (define (parse-html str)
+  (parse-html-helper str #f))
+
+(define (parse-html-helper str caught)
   (let* ([tag (parse-opening-tag str)]
          [name (parse-name (first tag))]
          [attributes (parse-attributes (second name))]
          [body (parse-closing (second tag) (first name))]
          [first-body (first body)]
          [second-body (second body)])
-    (if (or (equal? (first body) 'error) (equal? body ""))
-        '(error)
+    (if caught
+        (list 'error str)
         (if (has-children? (first body))
-            (let* ([parse-first-child (parse-html first-body)])
-              (if (equal? parse-first-child '(error))
+            (let* ([parse-first-child (with-handlers ([exn:fail? (lambda (exn) (set! caught #t) )])
+                                        (parse-html-helper first-body caught))])
+              (if caught
                   (list 'error str)
-                  (list (list (first name) attributes parse-first-child second-body)))) 
+                  (list (list (first name) attributes parse-first-child second-body))))
             (if (equal? (first body) "")
                 (list (first name) attributes first-body second-body)
                 (list (first name) attributes first-body))
-            ))))
+            )))
+  )
 
 
 #|
@@ -384,7 +389,7 @@ If the string does not start contain valid open and closing tags, return
          )
     (if (< (string-length (substring str init (string-length str))) closing-length)
         ;this is base case, "" should be returned when we have found closing tag
-        (list 'error str)
+        (error "wrong")
         (if (equal? (substring str init (+ opening-length init)) opening-tag)
             (parse-closing-helper str tag (+ counter 1) (+ 1 init))
             (if (equal? (substring str init (+ closing-length init)) closing-tag)
@@ -392,7 +397,7 @@ If the string does not start contain valid open and closing tags, return
                     (list (substring str 0 init) (substring str (+ init closing-length)))
                     (parse-closing-helper str tag (- counter 1) (+ 1 init)))
                 (if (= (string-length (substring str init (string-length str))) closing-length)
-                    (list 'error str)
+                    (error "wrong")
                     (parse-closing-helper str tag counter (+ 1 init ))))
             )
         ))
