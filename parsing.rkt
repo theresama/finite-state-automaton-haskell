@@ -233,8 +233,6 @@ Theresa Ma 999596343, g2potato
 > (parse-html "<body><p>Not good</body></p>")
 '(error "<body><p>Not good</body></p>")
 
->(parse-html "<body><p>please work</p><p>probably not</p></body>")
-
 |#
 
 (define (parse-html str)
@@ -242,7 +240,7 @@ Theresa Ma 999596343, g2potato
     (if (find-error result)
         (list 'error str)
         (append(take result (-(length result)1))(list(list-ref result (-(length result)1)))))
-  ))
+    ))
 
 (define (parse-main str)
   (let* ([tag (parse-opening-tag str)]
@@ -305,11 +303,15 @@ If the tag name is invalid it returns
 
 >(parse-opening-tag "<body> hey")
 '("<body>" " hey")
+
 >(parse-opening-tag "body> hey")
 '(error "body> hey")
+
 >(parse-opening-tag "<p id=\"main\" class=\"super\">Hey</p>")
 '("<p id=\"main\" class=\"super\">" "Hey</p>")
 
+> (parse-opening-tag "")
+'(error "")
 |#
 (define (parse-opening-tag str)
   (if (> (string-length str) 0)
@@ -328,6 +330,7 @@ Returns (list 'error str) if input is invalid.
 
 >(parse-name "<body>")
 '("body" "")
+
 >(parse-name "<p id=\"main\" class=\"super\">")
 '("p" " id=\"main\" class=\"super\"")
 
@@ -352,15 +355,14 @@ This is an attribute parser. It parses the attributes
 If the attributes are invalid it returns
   (list 'error str) instead.
 
-> (parse-attributes '("    name=\"hello  \"    class=\"  no\" "))
-'(("name" "hello")("class" "no"))
+> (parse-attributes "    name=\"hello  \"    class=\"  no\" ")
+'(("name" "hello  ") ("class" "  no"))
 
-'("p" "    "  id   =\"main\" class=\"super\"")
-'(("id" "main")("class" "super"))
+> (parse-attributes " id   =\"main\" class=\"super\" ")
+'(("id" "main") ("class" "super"))
 
-
-ex: taking in " id   =  \" main \"   class=\"super\""
-
+> (parse-attributes "")
+'()
 |#
 (define (parse-attributes str) 
   (if (find-error (list str))
@@ -371,9 +373,17 @@ ex: taking in " id   =  \" main \"   class=\"super\""
         )))
 
 #|
-parse-list-attribute-value
+(parse-list-attribute-value lst)
+This is a helper function of parse-attributes. It takes the list
+  of strings of attributes and values from parse-attributes, splits on 
+  quotation marks, and matches attribute/value pairs and returns
+  as a list
 
-takes in a list of attribute/value 
+> (parse-list-attribute-value '("id" "no id" "class" "button"))
+'(("id" "no id") ("class" "button"))
+
+> (parse-list-attribute-value '())
+'()
 
 |#  
 
@@ -390,27 +400,45 @@ takes in a list of attribute/value
 
 
 #|
-(parse-closing str)
-This is a closing tag parser. It finds the matching closing tag and 
-  returns all the children elements of the given tag as a string
+(parse-closing str tag)
+This is a closing tag parser. It's given HTML as a string and 
+  the tag name as a string and it finds the matching closing tag and 
+  returns all the inner elements of the given tag as a string, as
+  the first item of a list, and the second item of the list is the 
+  rest of the HTML string that was not parsed.
 
 If the string does not start contain valid open and closing tags, return
   (list 'error str) instead.
 
-> (parse-closing "Hey</p>" "p" 0) 
-"Hey"
+> (parse-closing "Hey</p>" "p") 
+'("Hey" "")
 
 > (parse-closing "<span id=\"help\">Hey</span></p>" "p")
-"<span id=\"help\">Hey</span>"
+'("<span id=\"help\">Hey</span>" "")
 
 > (parse-closing "<p id=\"help\">Hey</p></p><p><p></p></p>" "p")
-"<p id=\"help\">Hey</p>"
+'("<p id=\"help\">Hey</p>" "<p><p></p></p>")
 
 |#
 
 (define (parse-closing str tag)
   (parse-closing-helper str tag 0 0)
   )
+
+
+#|
+(parse-closing-helper str tag counter init)
+  A helper function for parse-closing, it takes
+  in as a string, the HTML to search through, and
+  the name of the tag to search for, a counter 
+  to track how many of the same tags 
+  have been opened within its body, and init 
+  is the first index of str through at which it
+  should start searching
+
+  If the correct tag is not found, an error
+  is returned along with the HTML that caused the error
+|#
 
 (define (parse-closing-helper str tag counter init)
   (if (or (find-error (list str)) (find-error (list tag)) )
@@ -439,7 +467,7 @@ If the string does not start contain valid open and closing tags, return
 
 #|
 (parse-body-text str)
-Given the body of an HTML element, this function will 
+Given the body of an HTML element as a string, this function will 
 return the body text of the element
 
 > (parse-text "hello")
@@ -459,11 +487,9 @@ return the body text of the element
 
 #|
 (parse-body-children str)
-Given the body of an HTML element, this function will parse
-the element if it contains children
+Given the body of an HTML element as a string, this function will 
+return #t if it has children elements or #f if it only contains text
 
-(parse-body-children "<span class=\"red\">text goes here</span>")
-"yes children"
 |#
 (define (has-children? str) 
   (let ([html-no-space (string-replace str " " "")])
@@ -473,8 +499,3 @@ the element if it contains children
             #t
             #f ;this html element only contains text, so call the other function
             ))))
-
-(define (has-sibling? str) 
-  (void)
-  )
-
