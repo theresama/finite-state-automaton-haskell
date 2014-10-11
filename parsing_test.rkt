@@ -49,10 +49,14 @@ Theresa Ma 999596343, g2potato
 (check-expect ((star parse-plain-char) "<html>hi") '(() "<html>hi"))
 
 
-(check-expect (parse-closing "<span class=\"red\">text goes here</span></p><div></div></body>" "p") "<span class=\"red\">text goes here</span>") 
+(check-expect (parse-closing "<span class=\"red\">text goes here</span></p><div></div></body>" "p") '("<span class=\"red\">text goes here</span>" "<div></div></body>")) 
 (check-expect (parse-closing "<span class=\"red\">text goes here</span><div></div></body>" "p") '(error))
-;(check-expect (parse-closing "" "h1") '(error))
-;(check-expect (parse-closing "<span class=\"red\">text goes here</span><div></div></body>" "p") '(error))
+(check-expect (parse-closing "" "h1") '(error))
+(check-expect (parse-closing "<span class=\"red\">text goes here</span><div></div></body>" "p") '(error))
+(check-expect (parse-closing "<p></p>" "p") '(error))
+(check-expect (parse-closing "<p id=\"help\">Hey</p></p><p><p></p></p>" "p") '("<p id=\"help\">Hey</p>" "<p><p></p></p>"))
+(check-expect (parse-closing "</p>" "p") '("" ""))
+
 
 
 
