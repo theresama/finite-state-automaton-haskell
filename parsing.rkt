@@ -34,7 +34,7 @@ Theresa Ma 999596343, g2potato
 |#
 
 (define (parse-html-tag str) 
-  (if (< (string-length str) 6)
+  (if (or (not (string? str)) (< (string-length str) 6))
       (list 'error str)
       (if (equal? (substring str 0 6) "<html>")
           (list "<html>" (substring str 6))
@@ -71,13 +71,15 @@ Theresa Ma 999596343, g2potato
 |#
 
 (define (parse-non-special-char str)
-  (if (equal? (string-length str) 0)
+  (if (not (string? str))
       (list 'error str)
-      (let ([f-letter (string-ref str 0)])
-        (if (is-special? f-letter)
-            (list 'error str)
-            (list f-letter (substring str 1)) 
-            ))))
+      (if (equal? (string-length str) 0)
+          (list 'error str)
+          (let ([f-letter (string-ref str 0)])
+            (if (is-special? f-letter)
+                (list 'error str)
+                (list f-letter (substring str 1)) 
+                )))))
 #|
 
 (parse-plain-char str)
@@ -89,7 +91,7 @@ Theresa Ma 999596343, g2potato
 |#
 
 (define (parse-plain-char str) 
-  (if (or (equal? str "") (is-white? (string-ref str 0)))
+  (if (or (equal? str "") (equal? str #\space) (is-white? (string-ref str 0)) (not (string? str)))
       (list 'error str)
       (parse-non-special-char str)
       ))
@@ -115,10 +117,10 @@ Theresa Ma 999596343, g2potato
 #t
 > (is-white? "asdf")
 #f
-
 |#
+
 (define (is-white? char)
-  (if (equal? #\space char)
+  (if (or (equal? #\space char) (equal? " " char))
       #t
       #f))
 
