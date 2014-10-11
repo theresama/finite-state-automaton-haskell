@@ -302,24 +302,47 @@ If the attributes are invalid it returns
 > (parse-attributes '("    name=\"hello  \"    class=\"  no\" "))
 '(("name" "hello")("class" "no"))
 
-'("p" "    "id=\"main\" class=\"super\"")
+'("p" "    "  id   =\"main\" class=\"super\"")
 '(("id" "main")("class" "super"))
 
 
+ex: taking in " id   =  \" main \"   class=\"super\""
+
 |#
-(define (parse-attributes str) (void))
+(define (parse-attributes str) 
+  (let* ([split-attributes-values (string-split str "\"")] ;returns a list
+    [attributes (parse-list-attribute-value split-attributes-values)])
+    attributes
+    ))
 
 #|
-(parse-one-attribute str)
+parse-list-attribute-value
+
+takes in a list of attribute/value 
+
+|#  
+
+(define (parse-list-attribute-value lst)
+  (if (or (empty? lst) (< (length lst) 2))
+      '()
+      (let ([attribute (string-replace (string-replace (first lst) " " "") "=" "")]
+            [value (first (rest lst))])
+        (cons (list attribute value) (parse-list-attribute-value (rest (rest lst)))
+        ))))
+  
+#|
+(parse-one-attribute attr val)
 Helper function for parse-attributes
-takes in string
+takes in two strings
 returns list
 
-> (parse-one-attribute "class="heading"")
+> (parse-one-attribute "class" "heading"")
 '("class" "heading")
 
 |#
-(define (parse-one-attribute str)(void))
+(define (parse-one-attribute attr val)
+  '(attr val)
+  )
 
 
 #|
