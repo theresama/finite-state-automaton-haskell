@@ -241,9 +241,9 @@ Theresa Ma 999596343, g2potato
          [attributes (parse-attributes (second name))]
          [body (parse-closing (second tag) (first name) 0 0)])
     (if (has-children? body)
-        (list (first name) attributes (parse-html body))
-        (list (first name) attributes body (second tag)))
-        ))
+        (list (list (first name) attributes (parse-html body)) "Other" ) 
+        (list (list (first name) attributes body) "other stuff")
+        )))
 
 
 
@@ -266,7 +266,7 @@ If the tag name is invalid it returns
 
 |#
 (define (parse-opening-tag str)
-  (if(equal? (substring str 0 1) "<")
+  (if (equal? (substring str 0 1) "<")
      (let ([html-tag (string-append (first (string-split str ">")) ">")])
        (list html-tag (substring str (string-length html-tag))))
      '(error, str)))
