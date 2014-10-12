@@ -67,9 +67,9 @@ Theresa Ma 999596343, g2potato
 
 (check-expect (parse-html "<body><p>Not good</body></p>") '(error "<body><p>Not good</body></p>"))
 (check-expect (parse-html "") '(error ""))
-(check-expect (parse-html "<html><body><p id=\"main\" class=\"super\">Hey</p></body></html>") '(("html" () ("body" () ("p" (("id" "main") ("class" "super")) "Hey")))))
-(check-expect (parse-html "<p><bold>hey</bold><bold>ney</bold></p>") '(("p" () ("bold" () "hey" "bold" () "ney"))))
-(check-expect (parse-html "<p><bold>hey</bold><bold>ney</bold></p><p>secondbody</p>") '(("p" () ("bold" () "hey" "bold" () "ney")) "<p>secondbody</p>"))
+(check-expect (parse-html "<html><body><p id=\"main\" class=\"super\">Hey</p></body></html>") '(("html" () ("body" () ("p" (("id" "main") ("class" "super")) "Hey"))) ""))
+(check-expect (parse-html "<p><bold>hey</bold><bold>ney</bold></p>") '(("p" () ("bold" () "hey" ("bold" () "ney"))) ""))
+(check-expect (parse-html "<p><bold>hey</bold><bold>ney</bold></p><p>secondbody</p>") '(("p" () ("bold" () "hey" ("bold" () "ney"))) "<p>secondbody</p>"))
 
 (check-expect (find-error '(1 2 3)) #f)
 (check-expect (find-error '(1 2 error)) #t)

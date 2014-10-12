@@ -261,11 +261,11 @@ The very first time the given string to (parse-html str) is parsed through
              [second-body (second body)])
         (if (equal? second-body "")
             (cond
-              [(has-children? first-body) (list (list (first name) attributes (parse-after-root first-body)))]
+              [(has-children? first-body) (list (list (first name) attributes (parse-after-root first-body))"")]
               [else (list (list (first name) attributes first-body) "")])
             (cond
               [(has-children? first-body) (list (list (first name) attributes (parse-after-root first-body)) second-body)]
-              [else (list (list (first name) attributes first-body) second-body)]))
+              [else (list (first name) attributes first-body second-body)]))
         
         )))
 
@@ -288,9 +288,9 @@ sure every re-occuring element is parsed
              [first-body (first body)]
              [second-body (second body)])
         (cond
-          [(and (has-children? first-body) (has-children? second-body)) (append (list (first name) attributes (parse-after-root first-body)) (parse-after-root second-body))]
+          [(and (has-children? first-body) (has-children? second-body)) (list (first name) attributes (parse-after-root first-body)) (list(parse-after-root second-body)) ]
           [(has-children? first-body) (list (first name) attributes (parse-after-root first-body))]
-          [(has-children? second-body) (append (list (first name) attributes first-body) (parse-after-root second-body))]
+          [(has-children? second-body) (append (list (first name) attributes first-body) (list (parse-after-root second-body)))]
           [else (list (first name) attributes first-body)])
         
         )))
