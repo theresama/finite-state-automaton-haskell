@@ -4,7 +4,7 @@
 
 ***Write the names and CDF accounts for each of your group members below.***
 
-<Name>, <CDF>
+Shervin Khazraie 999959521, g3khazra
 
 Theresa Ma 999596343, g2potato
 
@@ -17,7 +17,7 @@ Theresa Ma 999596343, g2potato
          either both star parse-list-attribute-value
          parse-html is-white? is-special? parse-closing
          has-children? parse-text parse-attributes parse-name
-         parse-opening-tag find-error parse-main)
+         parse-opening-tag find-error parse-root parse-after-root)
 
 
 
@@ -235,30 +235,65 @@ Theresa Ma 999596343, g2potato
 |#
 
 (define (parse-html str)
-  (let ([result (parse-main str)])
+  (let ([result (parse-root str)])
     (if (find-error result)
         (list 'error str)
         (append(take result (-(length result)1))(list(list-ref result (-(length result)1)))))
     ))
 
-(define (parse-main str)
-  (let* ([tag (parse-opening-tag str)]
-         [name (parse-name (first tag))]
-         [attributes (parse-attributes (second name))]
-         [body (parse-closing (second tag) (first name))]
-         [first-body (first body)]
-         [second-body (second body)])
-    (if (or (equal? (first body) 'error) (equal? body ""))
-        (list 'error)
-        (if (has-children? (first body))
-            (let ([parse-first-child (parse-html first-body)])
-              (if (equal? parse-first-child 'error)
-                  (list 'error str)
-                  (list (list (first name) attributes parse-first-child second-body)))) 
-            (if (equal? (first body) "")
-                (list (list (first name) attributes first-body )  second-body)
-                (list (first name) attributes first-body ))
-            ))))
+#|
+(parse-root str)
+The very first time the given string to (parse-html str) is parsed through
+(parse-root str) so that only the root element is parsed.
+
+>(parse-root "<p>hey</p><p>ney</p>")
+("p" () "hey" "<p>ney</p>")
+|#
+
+(define (parse-root str)
+  (if (find-error (list str))
+      (list 'error str)
+      (let* ([tag (parse-opening-tag str)]
+             [name (parse-name (first tag))]
+             [attributes (parse-attributes (second name))]
+             [body (parse-closing (second tag) (first name))]
+             [first-body (first body)]
+             [second-body (second body)])
+        (if (equal? second-body "")
+            (cond
+              [(has-children? first-body) (list (first name) attributes (parse-after-root first-body))]
+              [else (list (first name) attributes first-body)])
+            (cond
+              [(has-children? first-body) (list (first name) attributes (parse-after-root first-body) second-body)]
+              [else (list (first name) attributes first-body second-body)]))
+        
+        )))
+
+#|
+(parse-after-root str)
+Since the root element has already been seperated, parse-after-root makes
+sure every re-occuring element is parsed
+
+>(parse-after-root "<p>hey</p><p>ney</p>")
+'("p" () "hey" "p" () "ney")
+
+|#
+(define (parse-after-root str)
+  (if (find-error (list str))
+      (list 'error str)
+      (let* ([tag (parse-opening-tag str)]
+             [name (parse-name (first tag))]
+             [attributes (parse-attributes (second name))]
+             [body (parse-closing (second tag) (first name))]
+             [first-body (first body)]
+             [second-body (second body)])
+        (cond
+          [(and (has-children? first-body) (has-children? second-body)) (append (list (first name) attributes (parse-after-root first-body)) (parse-after-root second-body))]
+          [(has-children? first-body) (list (first name) attributes (parse-after-root first-body))]
+          [(has-children? second-body) (append (list (first name) attributes first-body) (parse-after-root second-body))]
+          [else (list (first name) attributes first-body)])
+        
+        )))
 
 
 #|
@@ -313,12 +348,14 @@ If the tag name is invalid it returns
 '(error "")
 |#
 (define (parse-opening-tag str)
-  (if (> (string-length str) 0)
-      (if (equal? (substring str 0 1) "<")
-          (let ([html-tag (string-append (first (string-split str ">")) ">")])
-            (list html-tag (substring str (string-length html-tag))))
-          (list 'error str))
-      (list 'error str)))
+  (if (find-error (list str))
+      (list 'error str)
+      (if (> (string-length str) 0)
+          (if (equal? (substring str 0 1) "<")
+              (let ([html-tag (string-append (first (string-split str ">")) ">")])
+                (list html-tag (substring str (string-length html-tag))))
+              (list 'error str))
+          (list 'error str))))
 
 #|
 (parse-name str)
@@ -491,10 +528,12 @@ return #t if it has children elements or #f if it only contains text
 
 |#
 (define (has-children? str) 
-  (let ([html-no-space (string-replace str " " "")])
-    (if (equal? (string-length html-no-space) 0)
-        #f
-        (if (equal? (substring html-no-space 0 1) "<")
-            #t
-            #f ;this html element only contains text, so call the other function
-            ))))
+  (if (find-error (list str))
+      (list 'error str)
+      (let ([html-no-space (string-replace str " " "")])
+        (if (equal? (string-length html-no-space) 0)
+            #f
+            (if (equal? (substring html-no-space 0 1) "<")
+                #t
+                #f ;this html element only contains text, so call the other function
+                )))))
