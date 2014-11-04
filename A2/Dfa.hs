@@ -10,7 +10,7 @@ Notes:
 module Dfa (State, Symbol, Transition, Automaton(..),
             allStrings, tableToDelta, extend, possibleOutcomes,
             accept, language, 
-            removeUseless, isFiniteLanguage, language') where
+            removeUseless, isFiniteLanguage, language', epsilonClosure, helper) where
 
 import Data.List
 
@@ -34,16 +34,23 @@ initial (Automaton _ _ _ i _) = i
 final :: Automaton -> [State]
 final (Automaton _ _ _ _ f) = f
 
-
 -- Questions 1-4: transitions
 tableToDelta :: [Transition] -> State -> Symbol -> [State]
-tableToDelta trans = (\given_state given_symbol -> concatMap (\(state symbol state2) -> 
-			if state == given_state && symbol == given_symbol 
-				then state2
-				else ()) trans)  
+tableToDelta trans = (\given_state given_symbol -> sort(nub(concatMap (\(s1, symbol, s2) -> 
+			if s1 == given_state && symbol == given_symbol 
+				then [s2]
+				else []) trans)))  
+--ACENDING ORDER AND NO DUPLICATES*****
 
 extend :: (State -> Symbol -> [State]) -> (State -> String -> [State])
-extend = undefined
+extend f = (\given_state given_string -> 
+		sort ( nub ( helper f (f given_state (head given_string)) (tail given_string))))
+
+helper :: (State -> Symbol -> [State]) -> [State] -> String -> [State]
+helper _ given_states "" = given_states
+helper _ [] _ = []
+helper f given_states given_string = helper f (concatMap (\state ->  f state (head given_string)) given_states) (tail given_string)
+					
 
 allStrings :: [Symbol] -> [[String]]
 allStrings = undefined
