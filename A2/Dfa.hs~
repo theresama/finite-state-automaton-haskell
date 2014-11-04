@@ -44,7 +44,7 @@ tableToDelta trans = (\given_state given_symbol -> sort(nub(concatMap (\(s1, sym
 
 extend :: (State -> Symbol -> [State]) -> (State -> String -> [State])
 extend f = (\given_state given_string -> 
-		helper f (f given_state (head given_string)) (tail given_string))
+		sort ( nub ( helper f (f given_state (head given_string)) (tail given_string))))
 
 helper :: (State -> Symbol -> [State]) -> [State] -> String -> [State]
 helper _ given_states "" = given_states
