@@ -52,11 +52,19 @@ helper _ [] _ = []
 helper f given_states given_string = helper f (concatMap (\state ->  f state (head given_string)) given_states) (tail given_string)
 					
 
+--Take as input a set of symbols of size k ≥ 1 (no duplicates)
+--Outputs an infinite list, where the n-th item in the list 
+--is a list of all kn strings of length n that can be made 
+--from the symbols in the input set, in alphabetical order
 allStrings :: [Symbol] -> [[String]]
-allStrings = undefined
+allStrings "" = [[""]]
+--allString str = map (\x y -> take y (allStringHelper x)) str 
+
+--allStringHelper str = map (\x y -> take y (allStringHelper x)) str 
+--= (head (permutations str)) : (head (permutations str)) ++ (head (permutations (tail str)))
 
 possibleOutcomes :: Automaton -> State -> [[(String, [State])]]
-possibleOutcomes = undefined
+possibleOutcomes auto q = undefined
 
 
 -- Questions 5-6: acceptance
