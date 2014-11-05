@@ -57,11 +57,20 @@ helper f given_states given_string = helper f (concatMap (\state ->  f state (he
 --is a list of all kn strings of length n that can be made 
 --from the symbols in the input set, in alphabetical order
 allStrings :: [Symbol] -> [[String]]
-allStrings "" = [[""]]
---allString str = map (\x y -> take y (allStringHelper x)) str 
+allStrings str = [""] : map (\x -> helperMap x str) (last (allStrings str))
 
---allStringHelper str = map (\x y -> take y (allStringHelper x)) str 
---= (head (permutations str)) : (head (permutations str)) ++ (head (permutations (tail str)))
+--iterate (concatMap (\x -> helperMap x str) (eachString str))
+
+--iterate (\x -> map (\y -> helperMap y str) str) str ]
+
+ -- concatMap (\x -> helperMap x str) (eachString str)) str]
+
+eachString "" = []
+eachString str = [[head str]] ++ eachString (tail str)
+
+helperMap element eachStr = map (\x -> element ++ x ) (eachString eachStr)
+
+allStringsHelp str = take 5 (allStrings str)
 
 possibleOutcomes :: Automaton -> State -> [[(String, [State])]]
 possibleOutcomes auto q = undefined
