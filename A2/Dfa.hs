@@ -69,8 +69,9 @@ eachString str = [[head str]] ++ eachString (tail str)
 helperMap element eachStr = map (\x -> element ++ x ) (eachString eachStr)
 
 possibleOutcomes :: Automaton -> State -> [[(String, [State])]]
-possibleOutcomes auto q = undefined
-
+possibleOutcomes auto q = map (\lst -> possibleHelper auto lst q) (allStrings (alphabet auto))
+possibleHelper auto [""] q = [((""), [])]
+possibleHelper auto lst q = map (\str -> (str, (extend (tableToDelta (transitions auto)) q str))) lst
 
 -- Questions 5-6: acceptance
 accept :: Automaton -> String -> Bool
