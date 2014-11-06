@@ -73,13 +73,15 @@ possibleOutcomes auto q = map (\lst -> possibleHelper auto lst q) (allStrings (a
 possibleHelper auto [""] q = [((""), [])]
 possibleHelper auto lst q = map (\str -> (str, (extend (tableToDelta (transitions auto)) q str))) lst
 
+listToString lst = concatMap (\x -> x) lst
+
 -- Questions 5-6: acceptance
 accept :: Automaton -> String -> Bool
+accept auto "" = if ((initial auto) `elem` (final auto)) then True else False
 accept auto str = and (map (\state -> state `elem` (extend (tableToDelta (transitions auto)) (initial auto) str)) (final auto))
 
 language :: Automaton -> [String]
-language = undefined
-
+language auto = concat (filter (\str -> accept auto (listToString(str))) (allStrings (alphabet auto)))
 
 -- Questions 7-9: finiteness
 removeUseless :: Automaton -> Automaton
