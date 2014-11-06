@@ -75,7 +75,7 @@ possibleHelper auto lst q = map (\str -> (str, (extend (tableToDelta (transition
 
 -- Questions 5-6: acceptance
 accept :: Automaton -> String -> Bool
-accept = undefined
+accept auto str = and (map (\state -> state `elem` (extend (tableToDelta (transitions auto)) (initial auto) str)) (final auto))
 
 language :: Automaton -> [String]
 language = undefined
