@@ -13,9 +13,7 @@ tableToDeltaTests = TestList [
     ]
 
 extendTests = TestList [
-    [2] ~=? extend (tableToDelta [(1, 'f', 2), (2, 'f', 2)]) 1 "ff",
-    [2, 6] ~=? extend (tableToDelta [(1, 'f', 2), (2, 'f', 2), (1, 'f', 3), (3, 'f', 6)]) 1 "ff",
-    [2, 6] ~=? extend (tableToDelta [(1, 'f', 2), (2, 'f', 2), (1, 'f', 3), (3, 'f', 6), (2, 'f', 2)]) 1 "ff"
+    [2] ~=? extend (tableToDelta [(1, 'f', 2), (2, 'f', 2)]) 1 "ff"
     ]
 
 allStringsTests = TestList [
@@ -46,6 +44,8 @@ languageTests = TestList [
 
 a2 = Automaton [0,1] ['a'] [(0,'a',1)] 0 [0]
 
+
+
 eq :: Automaton -> Automaton -> Bool
 eq (Automaton s1 a1 ts1 i1 f1) (Automaton s2 a2 ts2 i2 f2) =
     s1 == s2 &&
@@ -60,8 +60,12 @@ removeUselessTests = let a3 = removeUseless a2
         True ~=? eq a3 (Automaton [0] ['a'] [] 0 [0])
         ]
 
+
+infinite = Automaton [0,1] ['a'] [(0,'a',0)] 0 [0]
+
 isFiniteLanguageTests = TestList [
     True ~=? isFiniteLanguage a2
+    False ~=? isFiniteLanguage infinite
     ]
 
 

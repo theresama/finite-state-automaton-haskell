@@ -43,13 +43,13 @@ tableToDelta trans = (\given_state given_symbol -> sort(nub(concatMap (\(s1, sym
 --ACENDING ORDER AND NO DUPLICATES*****
 
 extend :: (State -> Symbol -> [State]) -> (State -> String -> [State])
-extend f = (\given_state given_string -> 
-		sort ( nub ( helper f (f given_state (head given_string)) (tail given_string))))
+extend f = (\givenState givenString -> 
+		sort ( nub ( helper f (f givenState (head givenString)) (tail givenString))))
 
 helper :: (State -> Symbol -> [State]) -> [State] -> String -> [State]
-helper _ given_states "" = given_states
+helper _ givenStates "" = givenStates
 helper _ [] _ = []
-helper f given_states given_string = helper f (concatMap (\state ->  f state (head given_string)) given_states) (tail given_string)
+helper f givenStates givenString = helper f (concatMap (\state ->  f state (head givenString)) givenStates) (tail givenString)
 					
 
 --Take as input a set of symbols of size k ≥ 1 (no duplicates)
@@ -81,19 +81,58 @@ accept auto "" = if ((initial auto) `elem` (final auto)) then True else False
 accept auto str = and (map (\state -> state `elem` (extend (tableToDelta (transitions auto)) (initial auto) str)) (final auto))
 
 language :: Automaton -> [String]
-language auto = concat (filter (\str -> accept auto (listToString(str))) (allStrings (alphabet auto)))
+language auto = 
+    if (((length (states auto)) == 1) && accept auto "")
+        then [""]
+    else 
+        concat (filter (\str -> accept auto (listToString(str))) (allStrings (alphabet auto)))
 
 -- Questions 7-9: finiteness
+--useful if there exists a string of symbols of length at most n 
+--that can be read to transition from q to a final state
 removeUseless :: Automaton -> Automaton
-removeUseless = undefined
+removeUseless auto = Automaton (notUselessStates auto) (alphabet auto) (notUselessTransition auto) (initial auto) (final auto)
+
+isUseless auto q n = if ((q == (initial auto)) || 
+    or (concatMap (\possibleState -> map (\fin -> fin `elem` (snd possibleState)) (final auto)) (possibleOutcomes auto q !! n)))
+    then False
+    else True
+
+isUselessToN auto q = or (map (\n -> isUseless auto q n) [1 .. (length (states auto))])
+notUselessStates auto = filter (\q -> not (isUselessToN auto q)) (states auto)
+uselessStates auto = filter (\q -> isUselessToN auto q) (states auto)
+
+notUselessTransition auto = filter (\t -> not ((getTrans t) `elem` (uselessStates auto))) (transitions auto)
+
+getTrans (_, _, x) = x
+
+lengthStates auto = length (states auto)
 
 isFiniteLanguage :: Automaton -> Bool
-isFiniteLanguage = undefined
+isFiniteLanguage auto = 
+    let notUseless = removeUseless auto
+    in not (or (map (\str -> accept notUseless str) (allStrings (alphabet notUseless) !! ((length (states notUseless)) + 1))))
+
 
 language' :: Automaton -> [String]
-language' = undefined
-
+language' auto = 
+    let isFinite = isFiniteLanguage auto
+    in if (isFinite) then
+        takeWhile (\s -> (length s) < ((length (states auto)) + 1)) (language auto)
+        else
+            language auto
 
 -- Question 10: epsilon transitions
 epsilonClosure :: Automaton -> [State] -> [State]
 epsilonClosure = undefined
+
+
+
+
+
+
+
+
+
+
+
