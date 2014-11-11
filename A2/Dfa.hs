@@ -89,30 +89,27 @@ language auto =
 --useful if there exists a string of symbols of length at most n 
 --that can be read to transition from q to a final state
 removeUseless :: Automaton -> Automaton
-removeUseless auto = Automaton (newStates auto) (alphabet auto) (newTransitions auto) (initial auto) (final auto)
+removeUseless auto = Automaton (notUselessStates auto) (alphabet auto) (notUselessTransition auto) (initial auto) (final auto)
 
-newStates :: Automaton -> [State]
-newStates auto = (filter (\x -> removeHelper auto x) (states auto)) 
+isUseless auto q n = if ((q == (initial auto)) || 
+    or (concatMap (\possibleState -> map (\fin -> fin `elem` (snd possibleState)) (final auto)) (possibleOutcomes auto q !! n)))
+    then False
+    else True
 
-newTransitions :: Automaton -> [Transition]
-newTransitions auto = filter (\(s1, _, s2) -> not (s1 `elem` newStates auto || s2 `elem` newStates auto)) (transitions auto)
+isUselessToN auto q = or (map (\n -> isUseless auto q n) [1 .. (length (states auto))])
+notUselessStates auto = filter (\q -> not (isUselessToN auto q)) (states auto)
+uselessStates auto = filter (\q -> isUselessToN auto q) (states auto)
 
-removeHelper :: Automaton -> State -> Bool
-removeHelper auto state = (length (filter (\x -> isFinal auto x || state == (initial auto))(take (length (states auto)) (possibleOutcomes auto state)))) > 0
+notUselessTransition auto = filter (\t -> not ((getTrans t) `elem` (uselessStates auto))) (transitions auto)
 
---return true if set of outcomes contains one outcome with final state
-isFinal :: Automaton -> [(String, [State])] -> Bool
-isFinal auto outcome = (length (filter (\y -> isFinalHelper auto y) outcome)) > 0  
-			
---return true if given possible outcome ends in final state 
-isFinalHelper :: Automaton -> (String, [State]) -> Bool
-isFinalHelper auto (s, states) = (length (filter (\x -> x `elem` (final auto)) states)) > 0      
+getTrans (_, _, x) = x
+
+lengthStates auto = length (states auto)
 
 isFiniteLanguage :: Automaton -> Bool
-isFiniteLanguage auto = isFiniteHelper (removeUseless auto)
-
-isFiniteHelper auto = (length (filter (\x -> not(isFinalHelper auto x)) ((possibleOutcomes auto (initial auto)) !! (length (states auto) + 2)) )) > 0
-
+isFiniteLanguage auto = 
+    let notUseless = removeUseless auto
+    in not (or (map (\str -> accept notUseless str) (allStrings (alphabet notUseless) !! ((length (states notUseless)) + 1))))
 
 language' :: Automaton -> [String]
 language' auto = 
