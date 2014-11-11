@@ -35,6 +35,10 @@ allStringsTests = TestList [
     ["aaa","aab","aba","abb","baa","bab","bba","bbb"] ~=? allStrings "ab" !! 3
     ]
 
+empty = Automaton [0] ['a'] [] 0 [0]
+
+ex = Automaton [0,1,2]['a','b'][(0,'a',1),(1,'a',2),(0,'b',0),(1,'b',1),(2,'b',2),(1,'a',0)] 0 [2]
+
 possibleOutcomesTests = TestList [
     [("aa",[1]), ("ab",[0,2]), ("ba",[0,2]), ("bb",[1])] ~=?
         (possibleOutcomes (Automaton [0,1,2]
@@ -44,17 +48,53 @@ possibleOutcomesTests = TestList [
                                       (0,'b',0),
                                       (1,'b',1),
                                       (2,'b',2),
-                                      (1,'a',0)] 0 [2]) 1) !! 2
+                                      (1,'a',0)] 0 [2]) 1) !! 2,
+    [("",[])] ~=? possibleOutcomes ex 1 !! 0,
+    [("",[])] ~=? possibleOutcomes ex 2 !! 0,
+    [("a",[]),("b",[])] ~=? possibleOutcomes ex 5 !! 1,
+    [("",[])] ~=? possibleOutcomes empty 0 !! 0,
+    [("a",[])] ~=? possibleOutcomes empty 0 !! 1,
+    [("a",[])] ~=? possibleOutcomes empty 1 !! 1
     ]
 
 a1 = Automaton [0,1] ['a'] [(0,'a',1),(1,'a',0)] 0 [0]
 
+ex2 = Automaton [0,1,2]
+                ['a','b','c']
+                [(0,'a',1),
+                (0,'b',1),
+                (0,'c',1)
+                (1,'a',1),
+                (1,'b',2),
+                (1,'c',1),
+                (2,'c',1),
+                (2,'b',2),
+                (1,'a',0)] 0 [2]
+
+finite = Automaton [0,1] ['a'] [(0,'a',1)] 0 [1]
+
 acceptTests = TestList [
-    True ~=? accept a1 "aa"
+    True ~=? accept a1 "aa",
+    False ~=? accept a1 "a",
+    False ~=? accept a1 "aaa",
+    True ~=? accept a1 "",
+    False ~=? accept ex "",
+    True ~=? accept ex "aa",
+    True ~=? accept ex "aab",
+    True ~=? accept ex "aabbbbbbbbaab",
+    False ~=? accept ex "babb",
+    True ~=? accept ex "babbab"
+    True ~=? accept ex2 "aaab";
+    True ~=? accept finite "a";
+    False ~=? accept finite "aa";
+    False ~=? accept finite "aaa";
     ]
 
 languageTests = TestList [
-    ["","aa"] ~=? take 2 (language a1)
+    ["","aa"] ~=? take 2 (language a1),
+    ["","aa","aaaa","aaaaaa","aaaaaaaa","aaaaaaaaaa","aaaaaaaaaaaa"] ~=? take 7 (language a1),
+    ["aa","aab"] ~=? take 2 (language ex),
+    ["aa","aab","aba","baa","aaaa"] ~=? take 5 (language ex)
     ]
 
 a2 = Automaton [0,1] ['a'] [(0,'a',1)] 0 [0]

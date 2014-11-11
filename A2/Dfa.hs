@@ -82,8 +82,8 @@ language :: Automaton -> [String]
 language auto = 
     if (((length (states auto)) == 1) && accept auto "")
         then [""]
-    else 
-        concat (filter (\str -> accept auto (listToString(str))) (allStrings (alphabet auto)))
+    else
+        filter (\str -> accept auto str) (concat (allStrings (alphabet auto)))
 
 -- Questions 7-9: finiteness
 --useful if there exists a string of symbols of length at most n 
