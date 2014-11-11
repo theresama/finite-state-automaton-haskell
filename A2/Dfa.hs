@@ -109,9 +109,9 @@ isFinalHelper :: Automaton -> (String, [State]) -> Bool
 isFinalHelper auto (s, states) = (length (filter (\x -> x `elem` (final auto)) states)) > 0      
 
 isFiniteLanguage :: Automaton -> Bool
-isFiniteLanguage auto = 
-    let notUseless = removeUseless auto
-    in not (or (map (\str -> accept notUseless str) (allStrings (alphabet notUseless) !! ((length (states notUseless)) + 1))))
+isFiniteLanguage auto = isFiniteHelper (removeUseless auto)
+
+isFiniteHelper auto = (length (filter (\x -> not(isFinalHelper auto x)) ((possibleOutcomes auto (initial auto)) !! (length (states auto) + 2)) )) > 0
 
 
 language' :: Automaton -> [String]
