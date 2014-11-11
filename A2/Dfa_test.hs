@@ -9,15 +9,30 @@ import Dfa (State, Symbol, Transition, Automaton(..),
 tableToDeltaTests = TestList [
     [2] ~=? tableToDelta [(1, 'f', 2)] 1 'f',
     -- Note: a symbol could be passed in that doesn't appear in any transition
-    [] ~=? tableToDelta [(1, 'f', 2)] 1 'b'
+    [] ~=? tableToDelta [(1, 'f', 2)] 1 'b',
+    [] ~=? tableToDelta [(1, 'f', 2)] 1 ' '
     ]
 
 extendTests = TestList [
-    [2] ~=? extend (tableToDelta [(1, 'f', 2), (2, 'f', 2)]) 1 "ff"
+    [2] ~=? extend (tableToDelta [(1, 'f', 2), (2, 'f', 2)]) 1 "ff",
+    [1] ~=? extend (tableToDelta [(1, 'f', 2), (2, 'f', 2)]) 1 "",
+    [2] ~=? extend (tableToDelta [(1, 'f', 2), (2, 'f', 1)]) 1 "fff",
+    [2,3,4] ~=? extend (tableToDelta [(1, 'f', 2), (2, 'f', 1), (1, 'f', 3), (2, 'f', 4), (3, 'f', 3), (4, 'f', 4)]) 1 "fff"
     ]
 
 allStringsTests = TestList [
-    ["aa", "ab", "ba", "bb"] ~=? allStrings "ab" !! 2
+    [""] ~=? allStrings "" !! 0,
+    [""] ~=? allStrings "ahdsfljkas" !! 0,
+    ["a", "b", "c"] ~=? allStrings "cba" !! 1,
+    ["a", "b", "c"] ~=? allStrings "cba" !! 1,
+    ["aa","ab","ac","ax","ay","az","ba",
+    "bb","bc","bx","by","bz","ca","cb",
+    "cc","cx","cy","cz","xa","xb","xc",
+    "xx","xy","xz","ya","yb","yc","yx",
+    "yy","yz","za","zb","zc","zx","zy","zz"] 
+    ~=? allStrings "cbazyx" !! 2,
+    ["aa", "ab", "ba", "bb"] ~=? allStrings "ab" !! 2,
+    ["aaa","aab","aba","abb","baa","bab","bba","bbb"] ~=? allStrings "ab" !! 3
     ]
 
 possibleOutcomesTests = TestList [
@@ -64,7 +79,7 @@ removeUselessTests = let a3 = removeUseless a2
 infinite = Automaton [0,1] ['a'] [(0,'a',0)] 0 [0]
 
 isFiniteLanguageTests = TestList [
-    True ~=? isFiniteLanguage a2
+    True ~=? isFiniteLanguage a2,
     False ~=? isFiniteLanguage infinite
     ]
 

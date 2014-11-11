@@ -1,16 +1,12 @@
 {- Assignment 2 - Finite Automata (due November 11, noon)
-
-Notes:
-- You may import Data.List; you may not import any other modules
-
 ***Write the names and CDF accounts for each of your group members below.***
-<Name>, <CDF>
-<Name>, <CDF>
+Theresa Ma, g2potato
+Shervin Khazraie Shaneivar, <CDF>
 -}
 module Dfa (State, Symbol, Transition, Automaton(..),
             allStrings, tableToDelta, extend, possibleOutcomes,
             accept, language, 
-            removeUseless, isFiniteLanguage, language', epsilonClosure, helper) where
+            removeUseless, isFiniteLanguage, language', epsilonClosure) where
 
 import Data.List
 
@@ -40,11 +36,13 @@ tableToDelta trans = (\given_state given_symbol -> sort(nub(concatMap (\(s1, sym
 			if s1 == given_state && symbol == given_symbol 
 				then [s2]
 				else []) trans)))  
+
 --ACENDING ORDER AND NO DUPLICATES*****
 
 extend :: (State -> Symbol -> [State]) -> (State -> String -> [State])
 extend f = (\givenState givenString -> 
-		sort ( nub ( helper f (f givenState (head givenString)) (tail givenString))))
+        if (givenString == "") then [givenState] else
+		(sort ( nub ( helper f (f givenState (head givenString)) (tail givenString)))))
 
 helper :: (State -> Symbol -> [State]) -> [State] -> String -> [State]
 helper _ givenStates "" = givenStates
@@ -64,7 +62,7 @@ allStringsHelper prev str = (concatMap (\x -> helperMap x str) prev)
     : allStringsHelper (concatMap (\x -> helperMap x str) prev) str
 
 eachString "" = []
-eachString str = [[head str]] ++ eachString (tail str)
+eachString str = sort ([[head str]] ++ eachString (tail str))
 
 helperMap element eachStr = map (\x -> element ++ x ) (eachString eachStr)
 
