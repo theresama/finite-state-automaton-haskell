@@ -89,22 +89,16 @@ language auto =
 --useful if there exists a string of symbols of length at most n 
 --that can be read to transition from q to a final state
 removeUseless :: Automaton -> Automaton
-removeUseless auto = Automaton (notUselessStates auto) (alphabet auto) (notUselessTransition auto) (initial auto) (final auto)
+removeUseless auto = Automaton (newStates auto) (alphabet auto) (newTransitions auto) (initial auto) (final auto)
 
-isUseless auto q n = if ((q == (initial auto)) || 
-    or (concatMap (\possibleState -> map (\fin -> fin `elem` (snd possibleState)) (final auto)) (possibleOutcomes auto q !! n)))
-    then False
-    else True
+newStates :: Automaton -> [State]
+newStates auto = (filter (\x -> removeHelper auto x) (states auto)) 
 
-isUselessToN auto q = or (map (\n -> isUseless auto q n) [1 .. (length (states auto))])
-notUselessStates auto = filter (\q -> not (isUselessToN auto q)) (states auto)
-uselessStates auto = filter (\q -> isUselessToN auto q) (states auto)
+newTransitions :: Automaton -> [Transition]
+newTransitions auto = filter (\(s1, _, s2) -> not (s1 `elem` newStates auto || s2 `elem` newStates auto)) (transitions auto)
 
-notUselessTransition auto = filter (\t -> not ((getTrans t) `elem` (uselessStates auto))) (transitions auto)
-
-getTrans (_, _, x) = x
-
-lengthStates auto = length (states auto)
+removeHelper :: Automaton -> State -> Bool
+removeHelper auto state = (length (filter (\x -> isFinal auto x || state == (initial auto))(take (length (states auto)) (possibleOutcomes auto state)))) > 0
 
 isFiniteLanguage :: Automaton -> Bool
 isFiniteLanguage auto = 

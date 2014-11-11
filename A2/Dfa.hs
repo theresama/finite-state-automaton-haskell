@@ -100,6 +100,14 @@ newTransitions auto = filter (\(s1, _, s2) -> not (s1 `elem` newStates auto || s
 removeHelper :: Automaton -> State -> Bool
 removeHelper auto state = (length (filter (\x -> isFinal auto x || state == (initial auto))(take (length (states auto)) (possibleOutcomes auto state)))) > 0
 
+--return true if set of outcomes contains one outcome with final state
+isFinal :: Automaton -> [(String, [State])] -> Bool
+isFinal auto outcome = (length (filter (\y -> isFinalHelper auto y) outcome)) > 0  
+			
+--return true if given possible outcome ends in final state 
+isFinalHelper :: Automaton -> (String, [State]) -> Bool
+isFinalHelper auto (s, states) = (length (filter (\x -> x `elem` (final auto)) states)) > 0      
+
 isFiniteLanguage :: Automaton -> Bool
 isFiniteLanguage auto = 
     let notUseless = removeUseless auto
