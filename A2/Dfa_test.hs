@@ -63,7 +63,7 @@ ex2 = Automaton [0,1,2]
                 ['a','b','c']
                 [(0,'a',1),
                 (0,'b',1),
-                (0,'c',1)
+                (0,'c',1),
                 (1,'a',1),
                 (1,'b',2),
                 (1,'c',1),
@@ -83,11 +83,11 @@ acceptTests = TestList [
     True ~=? accept ex "aab",
     True ~=? accept ex "aabbbbbbbbaab",
     False ~=? accept ex "babb",
-    True ~=? accept ex "babbab"
-    True ~=? accept ex2 "aaab";
-    True ~=? accept finite "a";
-    False ~=? accept finite "aa";
-    False ~=? accept finite "aaa";
+    True ~=? accept ex "babbab",
+    True ~=? accept ex2 "aaab",
+    True ~=? accept finite "a",
+    False ~=? accept finite "aa",
+    False ~=? accept finite "aaa"
     ]
 
 languageTests = TestList [
