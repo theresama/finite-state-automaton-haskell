@@ -33,9 +33,7 @@ final (Automaton _ _ _ _ f) = f
 -- Questions 1-4: transitions
 tableToDelta :: [Transition] -> State -> Symbol -> [State]
 tableToDelta trans = (\given_state given_symbol -> sort(nub(concatMap (\(s1, symbol, s2) -> 
-			if s1 == given_state && symbol == given_symbol 
-				then [s2]
-				else []) trans)))  
+    if s1 == given_state && symbol == given_symbol then [s2] else []) trans)))  
 
 --ACENDING ORDER AND NO DUPLICATES*****
 
@@ -47,36 +45,40 @@ extend f = (\givenState givenString ->
 helper :: (State -> Symbol -> [State]) -> [State] -> String -> [State]
 helper _ givenStates "" = givenStates
 helper _ [] _ = []
-helper f givenStates givenString = helper f (concatMap (\state ->  f state (head givenString)) givenStates) (tail givenString)
-					
+helper f givenStates givenString = helper f (concatMap 
+    (\state ->   f state (head givenString)) givenStates) (tail givenString)
 
---Take as input a set of symbols of size k ≥ 1 (no duplicates)
---Outputs an infinite list, where the n-th item in the list 
---is a list of all kn strings of length n that can be made 
---from the symbols in the input set, in alphabetical order
 allStrings :: [Symbol] -> [[String]]
-allStrings str = [""] : eachString str : concatMap (\x -> helperMap x str) (eachString str) 
-    : allStringsHelper (concatMap (\x -> helperMap x str) (eachString str)) str
+allStrings str = [""] : eachString str : concatMap (\x -> 
+    helperMap x str) (eachString str) : allStringsHelper (concatMap (\x -> 
+        helperMap x str) (eachString str)) str
 
+allStringsHelper :: [String] -> String -> [[String]]
 allStringsHelper prev str = (concatMap (\x -> helperMap x str) prev)
     : allStringsHelper (concatMap (\x -> helperMap x str) prev) str
 
+eachString :: String -> [String]
 eachString "" = []
 eachString str = sort ([[head str]] ++ eachString (tail str))
 
+helperMap :: String -> String -> [String]
 helperMap element eachStr = map (\x -> element ++ x ) (eachString eachStr)
 
 possibleOutcomes :: Automaton -> State -> [[(String, [State])]]
-possibleOutcomes auto q = map (\lst -> possibleHelper auto lst q) (allStrings (alphabet auto))
-possibleHelper auto [""] q = [((""), [])]
-possibleHelper auto lst q = map (\str -> (str, (extend (tableToDelta (transitions auto)) q str))) lst
+possibleOutcomes auto q = map (\lst -> 
+    possibleHelper auto lst q) (allStrings (alphabet auto))
 
-listToString lst = concatMap (\x -> x) lst
+possibleHelper :: Automaton -> [String] -> State -> [(String, [State])]
+possibleHelper auto [""] q = [((""), [])]
+possibleHelper auto lst q = map (\str -> 
+    (str, (extend (tableToDelta (transitions auto)) q str))) lst
 
 -- Questions 5-6: acceptance
 accept :: Automaton -> String -> Bool
 accept auto "" = if ((initial auto) `elem` (final auto)) then True else False
-accept auto str = and (map (\state -> state `elem` (extend (tableToDelta (transitions auto)) (initial auto) str)) (final auto))
+accept auto str = and (map (\state -> 
+    state `elem` (extend (tableToDelta (transitions auto)) 
+        (initial auto) str)) (final auto))
 
 language :: Automaton -> [String]
 language auto = 
@@ -86,19 +88,25 @@ language auto =
         filter (\str -> accept auto str) (concat (allStrings (alphabet auto)))
 
 -- Questions 7-9: finiteness
---useful if there exists a string of symbols of length at most n 
---that can be read to transition from q to a final state
 removeUseless :: Automaton -> Automaton
-removeUseless auto = Automaton (newStates auto) (alphabet auto) (newTransitions auto (newStates auto)) (initial auto) (final auto)
+removeUseless auto = Automaton (newStates auto) 
+                                (alphabet auto) 
+                                (newTransitions auto (newStates auto)) 
+                                (initial auto) 
+                                (final auto)
 
 newStates :: Automaton -> [State]
-newStates auto = (filter (\x -> x == (initial auto) || x `elem` (final auto) || removeHelper auto x) (states auto))
+newStates auto = (filter (\x -> x == (initial auto) 
+                            || x `elem` (final auto) 
+                            || removeHelper auto x) (states auto))
 
 newTransitions :: Automaton -> [State] -> [Transition]
-newTransitions auto newState = filter (\(s1, _, s2) -> not (s1 `notElem` newState || s2 `notElem` newState)) (transitions auto)
+newTransitions auto newState = filter (\(s1, _, s2) -> 
+    not (s1 `notElem` newState || s2 `notElem` newState)) (transitions auto)
 
 removeHelper :: Automaton -> State -> Bool
-removeHelper auto state = (length (filter (\x -> isFinal auto x)(take (length (states auto)) (possibleOutcomes auto state)))) > 0
+removeHelper auto state = (length (filter (\x -> 
+    isFinal auto x)(take (length (states auto)) (possibleOutcomes auto state)))) > 0
 
 --return true if set of outcomes contains one outcome with final state
 isFinal :: Automaton -> [(String, [State])] -> Bool
@@ -111,7 +119,9 @@ isFinalHelper auto (s, states) = (length (filter (\x -> x `elem` (final auto)) s
 isFiniteLanguage :: Automaton -> Bool
 isFiniteLanguage auto = 
     let notUseless = removeUseless auto
-    in not (or (map (\str -> accept notUseless str) (allStrings (alphabet notUseless) !! ((length (states notUseless)) + 1))))
+    in not (or (map (\str -> 
+        accept notUseless str) (allStrings (alphabet notUseless) 
+        !! ((length (states notUseless)) + 1))))
 
 language' :: Automaton -> [String]
 language' auto = if isFiniteLanguage auto 
