@@ -129,7 +129,7 @@ language' auto = if isFiniteLanguage auto
 
 -- Question 10: epsilon transitions
 epsilonClosure :: Automaton -> [State] -> [State]
-epsilonClosure auto states = sort(nub(epsilonHelper auto states))
+epsilonClosure auto state = filter (\x -> x `elem` (states auto)) (sort(nub(epsilonHelper auto state)))
 	
 epsilonHelper :: Automaton -> [State] -> [State]
 epsilonHelper auto [] = []
