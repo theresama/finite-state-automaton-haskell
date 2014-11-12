@@ -110,12 +110,6 @@ isFinalHelper auto (s, states) = (length (filter (\x -> x `elem` (final auto)) s
 
 isFiniteLanguage :: Automaton -> Bool
 isFiniteLanguage auto = 
---    let notUseless = removeUseless auto
---    in 
---    if (transitions notUseless == []) && (initial notUseless `elem` (final notUseless)) then True
---        else length (filter (\(st1, sym, st2) -> st2 `notElem` (final notUseless)) --(isFiniteLanguageHelper notUseless)) > 0
-
---isFiniteLanguageHelper auto = filter (\(st1, sym, st2) -> st1 `elem` (final auto)) (transitions --auto)
     let notUseless = removeUseless auto
     in not (or (map (\str -> accept notUseless str) (allStrings (alphabet notUseless) !! ((length (states notUseless)) + 1))))
 
@@ -123,13 +117,6 @@ language' :: Automaton -> [String]
 language' auto = if isFiniteLanguage auto 
 			then take (length (states auto) - 1) (language auto) 	
 			else language auto 
-		
-
-  --  let isFinite = isFiniteLanguage auto
-    --in if (isFinite) then
-      --  takeWhile (\s -> (length s) < ((length (states auto)) + 1)) (language auto)
-        --else
-          --  language auto
 
 -- Question 10: epsilon transitions
 epsilonClosure :: Automaton -> [State] -> [State]
