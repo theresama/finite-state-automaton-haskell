@@ -109,11 +109,16 @@ eq (Automaton s1 a1 ts1 i1 f1) (Automaton s2 a2 ts2 i2 f2) =
     i1 == i2 &&
     f1 == f2
 
-removeUselessTests = let a3 = removeUseless a2
-    in
-    TestList [
-        True ~=? eq a3 (Automaton [0] ['a'] [] 0 [0])
-        ]
+removeUselessTests = 
+	let a3 = removeUseless a2
+		f = removeUseless finite
+		a = removeUseless a1	
+	    in
+	    TestList [
+		True ~=? eq a3 (Automaton [0] ['a'] [] 0 [0])
+		True ~=? eq f (Automaton [0,1] ['a'] [(0,'a',1)] 0 [1])
+		True ~=? eq f (Automaton [0,1] ['a'] [(0,'a',1),(1,'a',0)] 0 [0])
+		]
 
 
 infinite = Automaton [0,1] ['a'] [(0,'a',0)] 0 [0]

@@ -120,7 +120,10 @@ infinite = Automaton [0,1] ['a'] [(0,'a',0)] 0 [0]
 
 isFiniteLanguageTests = TestList [
     True ~=? isFiniteLanguage a2,
-    False ~=? isFiniteLanguage infinite
+    False ~=? isFiniteLanguage infinite,
+    True ~=? isFiniteLanguage finite,
+    False ~=? isFiniteLanguage a1,
+    False ~=? isFiniteLanguage ex
     ]
 
 
