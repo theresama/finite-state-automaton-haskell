@@ -66,6 +66,9 @@ empty = Automaton [0] ['a'] [] 0 [0]
 
 ex = Automaton [0,1,2]['a','b'][(0,'a',1),(1,'a',2),(0,'b',0),(1,'b',1),(2,'b',2),(1,'a',0)] 0 [2]
 
+a1 = Automaton [0,1] ['a'] [(0,'a',1),(1,'a',0)] 0 [0]
+b1 = Automaton [0,1] ['b', 'a'] [(0,'a',1),(1,'a',0), (0,'b',1),(1,'b',0)] 0 [0]
+
 possibleOutcomesTests = TestList [
     [("aa",[1]), ("ab",[0,2]), ("ba",[0,2]), ("bb",[1])] ~=?
         (possibleOutcomes (Automaton [0,1,2]
@@ -81,10 +84,19 @@ possibleOutcomesTests = TestList [
     [("a",[]),("b",[])] ~=? possibleOutcomes ex 5 !! 1,
     [("",[])] ~=? possibleOutcomes empty 0 !! 0,
     [("a",[])] ~=? possibleOutcomes empty 0 !! 1,
-    [("a",[])] ~=? possibleOutcomes empty 1 !! 1
-    ]
+    [("a",[])] ~=? possibleOutcomes empty 1 !! 1,
+    [("a",[0])] ~=? possibleOutcomes a1 1 !! 1,
+    [("a",[1])] ~=? possibleOutcomes a1 0 !! 1,
+    [("aa",[1])] ~=? possibleOutcomes a1 1 !! 2,
+    [("aa",[0])] ~=? possibleOutcomes a1 0 !! 2,
+    [("aaa",[0])] ~=? possibleOutcomes a1 1 !! 3,
+    [("aaa",[1])] ~=? possibleOutcomes a1 0 !! 3,
+    [("a",[1]),("b",[1])] ~=? possibleOutcomes b1 0 !! 1,
+    [("a",[0]),("b",[0])] ~=? possibleOutcomes b1 1 !! 1,
+    [("aa",[0]),("ab",[0]),("ba",[0]),("bb",[0])] ~=? possibleOutcomes b1 0 !! 2,
+    [("aa",[1]),("ab",[1]),("ba",[1]),("bb",[1])] ~=? possibleOutcomes b1 1 !! 2
 
-a1 = Automaton [0,1] ['a'] [(0,'a',1),(1,'a',0)] 0 [0]
+    ]
 
 ex2 = Automaton [0,1,2]
                 ['a','b','c']
@@ -117,16 +129,20 @@ acceptTests = TestList [
     False ~=? accept finite "aaa"
     ]
 
+a2 = Automaton [0,1] ['a'] [(0,'a',1)] 0 [0]
+
 languageTests = TestList [
     ["","aa"] ~=? take 2 (language a1),
     ["","aa","aaaa","aaaaaa","aaaaaaaa","aaaaaaaaaa","aaaaaaaaaaaa"] ~=? take 7 (language a1),
     ["aa","aab"] ~=? take 2 (language ex),
-    ["aa","aab","aba","baa","aaaa"] ~=? take 5 (language ex)
+    ["aa","aab","aba","baa","aaaa"] ~=? take 5 (language ex),
+    ["","aa","ab","ba","bb"] ~=? take 5 (language b1),
+    [""] ~=? take 1 (language empty),
+    [""] ~=? take 3 (language empty),
+    ["ab","bb"] ~=? take 2 (language ex2),
+    ["ab","bb","cb"] ~=? take 3 (language ex2),
+    ["a"] ~=? take 1 (language finite)
     ]
-
-a2 = Automaton [0,1] ['a'] [(0,'a',1)] 0 [0]
-
-
 
 eq :: Automaton -> Automaton -> Bool
 eq (Automaton s1 a1 ts1 i1 f1) (Automaton s2 a2 ts2 i2 f2) =
@@ -140,11 +156,27 @@ removeUselessTests =
         let     a3 = (removeUseless a2) 
                 f = (removeUseless finite)
                 a = (removeUseless a1)
+                ex3 = (removeUseless ex2)
+                b2 = (removeUseless b1)
+                em1 = (removeUseless empty)
         in
     TestList [
         True ~=? eq a3 (Automaton [0] ['a'] [] 0 [0]),
         True ~=? eq f (Automaton [0,1] ['a'] [(0,'a',1)] 0 [1]),
-        True ~=? eq a (Automaton [0,1] ['a'] [(0,'a',1),(1,'a',0)] 0 [0])
+        True ~=? eq a (Automaton [0,1] ['a'] [(0,'a',1),(1,'a',0)] 0 [0]),
+        True ~=? eq ex3 (Automaton [0,1,2]
+                            ['a','b','c']
+                            [(0,'a',1),
+                            (0,'b',1),
+                            (0,'c',1),
+                            (1,'a',1),
+                            (1,'b',2),
+                            (1,'c',1),
+                            (2,'c',1),
+                            (2,'b',2),
+                            (1,'a',0)] 0 [2]),
+        True ~=? eq b2 (Automaton [0,1] ['b', 'a'] [(0,'a',1),(1,'a',0),(0,'b',1),(1,'b',0)] 0 [0]),
+        True ~=? eq em1 (Automaton [0] ['a'] [] 0 [0])
     ]
 
 
