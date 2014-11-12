@@ -118,9 +118,6 @@ removeUselessTests =
         True ~=? eq a3 (Automaton [0] ['a'] [] 0 [0]),
         True ~=? eq f (Automaton [0,1] ['a'] [(0,'a',1)] 0 [1]),
         True ~=? eq a (Automaton [0,1] ['a'] [(0,'a',1),(1,'a',0)] 0 [0])
-        ]
-
-
 
 infinite = Automaton [0,1] ['a'] [(0,'a',0)] 0 [0]
 

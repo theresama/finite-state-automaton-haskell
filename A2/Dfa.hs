@@ -89,8 +89,9 @@ language auto =
 --useful if there exists a string of symbols of length at most n 
 --that can be read to transition from q to a final state
 removeUseless :: Automaton -> Automaton
-removeUseless auto = Automaton (notUselessStates auto) (alphabet auto) (notUselessTransition auto) (initial auto) (final auto)
+removeUseless auto = Automaton (newStates auto) (alphabet auto) (newTransitions auto (newStates auto)) (initial auto) (final auto)
 
+<<<<<<< HEAD
 isUseless auto q n = if (q == (initial auto) || (q `elem` (final auto))) || or (concatMap (\possibleState -> map (\fin -> fin `elem` (snd possibleState)) (final auto)) (possibleOutcomes auto q !! n))
     then False
     else True
@@ -98,15 +99,28 @@ isUseless auto q n = if (q == (initial auto) || (q `elem` (final auto))) || or (
 isUselessToN auto q = or (map (\n -> isUseless auto q n) [1 .. (length (states auto))])
 notUselessStates auto = filter (\q -> not (isUselessToN auto q)) (states auto)
 uselessStates auto = filter (\q -> isUselessToN auto q) (states auto)
+=======
+newStates :: Automaton -> [State]
+newStates auto = (filter (\x -> x == (initial auto) || x `elem` (final auto) || removeHelper auto x) (states auto))
 
-notUselessTransition auto = filter (\t -> not ((getTrans t) `elem` (uselessStates auto))) (transitions auto)
+newTransitions :: Automaton -> [State] -> [Transition]
+newTransitions auto newState = filter (\(s1, _, s2) -> not (s1 `notElem` newState || s2 `notElem` newState)) (transitions auto)
+>>>>>>> ba0e65900bb1cc4d1e79df0006b215e8753bb4cb
 
-getTrans (_, _, x) = x
+removeHelper :: Automaton -> State -> Bool
+removeHelper auto state = (length (filter (\x -> isFinal auto x)(take (length (states auto)) (possibleOutcomes auto state)))) > 0
 
-lengthStates auto = length (states auto)
+--return true if set of outcomes contains one outcome with final state
+isFinal :: Automaton -> [(String, [State])] -> Bool
+isFinal auto outcome = (length (filter (\y -> isFinalHelper auto y) outcome)) > 0
+
+--return true if given possible outcome ends in final state
+isFinalHelper :: Automaton -> (String, [State]) -> Bool
+isFinalHelper auto (s, states) = (length (filter (\x -> x `elem` (final auto)) states)) > 0 
 
 isFiniteLanguage :: Automaton -> Bool
 isFiniteLanguage auto = 
+<<<<<<< HEAD
     let notUseless = removeUseless auto
     in not (or (map (\str -> accept notUseless str) (allStrings (alphabet notUseless) !! ((length (states notUseless)) + 1))))
 
@@ -146,9 +160,46 @@ epsilonClosures auto state = state : (tableToDelta (transitions auto) state ' ')
 
 
 
+=======
+--    let notUseless = removeUseless auto
+--    in 
+--    if (transitions notUseless == []) && (initial notUseless `elem` (final notUseless)) then True
+--        else length (filter (\(st1, sym, st2) -> st2 `notElem` (final notUseless)) --(isFiniteLanguageHelper notUseless)) > 0
 
+--isFiniteLanguageHelper auto = filter (\(st1, sym, st2) -> st1 `elem` (final auto)) (transitions --auto)
+    let notUseless = removeUseless auto
+    in not (or (map (\str -> accept notUseless str) (allStrings (alphabet notUseless) !! ((length (states notUseless)) + 1))))
 
+language' :: Automaton -> [String]
+language' auto = if isFiniteLanguage auto 
+			then take (length (states auto) - 1) (language auto) 	
+			else language auto 
+		
 
+  --  let isFinite = isFiniteLanguage auto
+    --in if (isFinite) then
+      --  takeWhile (\s -> (length s) < ((length (states auto)) + 1)) (language auto)
+        --else
+          --  language auto
+
+-- Question 10: epsilon transitions
+epsilonClosure :: Automaton -> [State] -> [State]
+epsilonClosure auto states = epsilonHelper auto states
+	
+epsilonHelper :: Automaton -> [State] -> [State]
+epsilonHelper auto [] = []
+epsilonHelper auto (x:[]) = [x] ++ (getRelTrans auto x)   
+epsilonHelper auto (x:xs) = [x] ++ (getRelTrans auto x) ++ (epsilonHelper auto xs)
+>>>>>>> ba0e65900bb1cc4d1e79df0006b215e8753bb4cb
+
+getRelTrans :: Automaton -> State -> [State]
+getRelTrans auto state = transToList (filter (\(x, y, z) -> state == x) (getEpsilonTrans auto)) 
+
+getEpsilonTrans :: Automaton -> [Transition]
+getEpsilonTrans auto = filter (\(_, x, _) -> x == ' ') (transitions auto) 
+
+transToList :: [Transition] -> [State]
+transToList trans = map (\(_,_,x) -> x) (trans) 
 
 
 
