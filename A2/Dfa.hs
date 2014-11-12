@@ -91,12 +91,25 @@ language auto =
 removeUseless :: Automaton -> Automaton
 removeUseless auto = Automaton (newStates auto) (alphabet auto) (newTransitions auto (newStates auto)) (initial auto) (final auto)
 
---    let notUseless = removeUseless auto
---    in 
---    if (transitions notUseless == []) && (initial notUseless `elem` (final notUseless)) then True
---        else length (filter (\(st1, sym, st2) -> st2 `notElem` (final notUseless)) --(isFiniteLanguageHelper notUseless)) > 0
+newStates :: Automaton -> [State]
+newStates auto = (filter (\x -> x == (initial auto) || x `elem` (final auto) || removeHelper auto x) (states auto))
 
---isFiniteLanguageHelper auto = filter (\(st1, sym, st2) -> st1 `elem` (final auto)) (transitions --auto)
+newTransitions :: Automaton -> [State] -> [Transition]
+newTransitions auto newState = filter (\(s1, _, s2) -> not (s1 `notElem` newState || s2 `notElem` newState)) (transitions auto)
+
+removeHelper :: Automaton -> State -> Bool
+removeHelper auto state = (length (filter (\x -> isFinal auto x)(take (length (states auto)) (possibleOutcomes auto state)))) > 0
+
+--return true if set of outcomes contains one outcome with final state
+isFinal :: Automaton -> [(String, [State])] -> Bool
+isFinal auto outcome = (length (filter (\y -> isFinalHelper auto y) outcome)) > 0
+
+--return true if given possible outcome ends in final state
+isFinalHelper :: Automaton -> (String, [State]) -> Bool
+isFinalHelper auto (s, states) = (length (filter (\x -> x `elem` (final auto)) states)) > 0 
+
+isFiniteLanguage :: Automaton -> Bool
+isFiniteLanguage auto = 
     let notUseless = removeUseless auto
     in not (or (map (\str -> accept notUseless str) (allStrings (alphabet notUseless) !! ((length (states notUseless)) + 1))))
 
@@ -104,13 +117,6 @@ language' :: Automaton -> [String]
 language' auto = if isFiniteLanguage auto 
 			then take (length (states auto) - 1) (language auto) 	
 			else language auto 
-		
-
-  --  let isFinite = isFiniteLanguage auto
-    --in if (isFinite) then
-      --  takeWhile (\s -> (length s) < ((length (states auto)) + 1)) (language auto)
-        --else
-          --  language auto
 
 -- Question 10: epsilon transitions
 epsilonClosure :: Automaton -> [State] -> [State]
