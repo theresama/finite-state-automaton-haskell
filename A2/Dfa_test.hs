@@ -66,6 +66,9 @@ empty = Automaton [0] ['a'] [] 0 [0]
 
 ex = Automaton [0,1,2]['a','b'][(0,'a',1),(1,'a',2),(0,'b',0),(1,'b',1),(2,'b',2),(1,'a',0)] 0 [2]
 
+a1 = Automaton [0,1] ['a'] [(0,'a',1),(1,'a',0)] 0 [0]
+b1 = Automaton [0,1] ['b', 'a'] [(0,'a',1),(1,'a',0), (0,'b',1),(1,'b',0)] 0 [0]
+
 possibleOutcomesTests = TestList [
     [("aa",[1]), ("ab",[0,2]), ("ba",[0,2]), ("bb",[1])] ~=?
         (possibleOutcomes (Automaton [0,1,2]
@@ -81,10 +84,21 @@ possibleOutcomesTests = TestList [
     [("a",[]),("b",[])] ~=? possibleOutcomes ex 5 !! 1,
     [("",[])] ~=? possibleOutcomes empty 0 !! 0,
     [("a",[])] ~=? possibleOutcomes empty 0 !! 1,
-    [("a",[])] ~=? possibleOutcomes empty 1 !! 1
+    [("a",[])] ~=? possibleOutcomes empty 1 !! 1,
+    [("a",[0])] ~=? possibleOutcomes a1 1 !! 1,
+    [("a",[1])] ~=? possibleOutcomes a1 0 !! 1,
+    [("aa",[1])] ~=? possibleOutcomes a1 1 !! 2,
+    [("aa",[0])] ~=? possibleOutcomes a1 0 !! 2,
+    [("aaa",[0])] ~=? possibleOutcomes a1 1 !! 3,
+    [("aaa",[1])] ~=? possibleOutcomes a1 0 !! 3,
+    [("a",[1]),("b",[1])] ~=? possibleOutcomes b1 0 !! 1,
+    [("a",[0]),("b",[0])] ~=? possibleOutcomes b1 1 !! 1,
+    [("aa",[0]),("ab",[0]),("ba",[0]),("bb",[0])] ~=? possibleOutcomes b1 0 !! 2,
+    [("aa",[1]),("ab",[1]),("ba",[1]),("bb",[1])] ~=? possibleOutcomes b1 1 !! 2
+
     ]
 
-a1 = Automaton [0,1] ['a'] [(0,'a',1),(1,'a',0)] 0 [0]
+
 
 ex2 = Automaton [0,1,2]
                 ['a','b','c']
