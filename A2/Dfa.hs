@@ -91,12 +91,11 @@ language auto =
 removeUseless :: Automaton -> Automaton
 removeUseless auto = Automaton (notUselessStates auto) (alphabet auto) (notUselessTransition auto) (initial auto) (final auto)
 
-isUseless auto q n = if ((q == (initial auto)) || 
-    or (concatMap (\possibleState -> map (\fin -> fin `elem` (snd possibleState)) (final auto)) (possibleOutcomes auto q !! n)))
+isUseless auto q n = if (q == (initial auto) || (q `elem` (final auto))) || or (concatMap (\possibleState -> map (\fin -> fin `elem` (snd possibleState)) (final auto)) (possibleOutcomes auto q !! n))
     then False
     else True
 
-isUselessToN auto q = or (map (\n -> isUseless auto q n) [0 .. (length (states auto))])
+isUselessToN auto q = or (map (\n -> isUseless auto q n) [1 .. (length (states auto))])
 notUselessStates auto = filter (\q -> not (isUselessToN auto q)) (states auto)
 uselessStates auto = filter (\q -> isUselessToN auto q) (states auto)
 
@@ -109,11 +108,16 @@ lengthStates auto = length (states auto)
 isFiniteLanguage :: Automaton -> Bool
 isFiniteLanguage auto = 
     let notUseless = removeUseless auto
-    in 
-    if (transitions notUseless == []) && (initial notUseless `elem` (final notUseless)) then True
-        else length (filter (\(st1, sym, st2) -> st2 `notElem` (final notUseless)) (isFiniteLanguageHelper notUseless)) > 0
+    in not (or (map (\str -> accept notUseless str) (allStrings (alphabet notUseless) !! ((length (states notUseless)) + 1))))
 
-isFiniteLanguageHelper auto = filter (\(st1, sym, st2) -> st1 `elem` (final auto)) (transitions auto)
+  --  let notUseless = removeUseless auto
+   -- in 
+    --if (transitions notUseless == []) && (initial notUseless `elem` (final notUseless)) then True
+      --  else if isFiniteLanguageHelper notUseless == [] then True
+        --    else 
+          --  length (filter (\(st1, sym, st2) -> st2 `notElem` (final notUseless)) (isFiniteLanguageHelper notUseless)) > 0
+
+--isFiniteLanguageHelper auto = filter (\(st1, sym, st2) -> st1 `elem` (final auto)) (transitions auto)
     -- let notUseless = removeUseless auto
     --in not (or (map (\str -> accept notUseless str) (allStrings (alphabet notUseless) !! ((length (states notUseless)) + 1))))
 
@@ -121,13 +125,24 @@ language' :: Automaton -> [String]
 language' auto = 
     let isFinite = isFiniteLanguage auto
     in if (isFinite) then
-        takeWhile (\s -> (length s) < ((length (states auto)) + 1)) (language auto)
+        take (length (states auto) - 1) (language auto)
         else
             language auto
 
 -- Question 10: epsilon transitions
 epsilonClosure :: Automaton -> [State] -> [State]
-epsilonClosure = undefined
+epsilonClosure auto s = 
+    if (length s == 1) 
+        then head s : (tableToDelta (transitions auto) (head s) ' ')
+        else head s : (tableToDelta (transitions auto) (head s) ' ') ++ epsilonClosure auto (tail s) 
+
+epsilonClosures auto state = state : (tableToDelta (transitions auto) state ' ')
+
+-- if no epsilon closures
+-- return self
+
+
+
 
 
 
