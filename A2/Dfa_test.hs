@@ -156,11 +156,27 @@ removeUselessTests =
         let     a3 = (removeUseless a2) 
                 f = (removeUseless finite)
                 a = (removeUseless a1)
+                ex3 = (removeUseless ex2)
+                b2 = (removeUseless b1)
+                em1 = (removeUseless empty)
         in
     TestList [
         True ~=? eq a3 (Automaton [0] ['a'] [] 0 [0]),
         True ~=? eq f (Automaton [0,1] ['a'] [(0,'a',1)] 0 [1]),
-        True ~=? eq a (Automaton [0,1] ['a'] [(0,'a',1),(1,'a',0)] 0 [0])
+        True ~=? eq a (Automaton [0,1] ['a'] [(0,'a',1),(1,'a',0)] 0 [0]),
+        True ~=? eq ex3 (Automaton [0,1,2]
+                            ['a','b','c']
+                            [(0,'a',1),
+                            (0,'b',1),
+                            (0,'c',1),
+                            (1,'a',1),
+                            (1,'b',2),
+                            (1,'c',1),
+                            (2,'c',1),
+                            (2,'b',2),
+                            (1,'a',0)] 0 [2]),
+        True ~=? eq b2 (Automaton [0,1] ['b', 'a'] [(0,'a',1),(1,'a',0),(0,'b',1),(1,'b',0)] 0 [0]),
+        True ~=? eq em1 (Automaton [0] ['a'] [] 0 [0])
     ]
 
 
