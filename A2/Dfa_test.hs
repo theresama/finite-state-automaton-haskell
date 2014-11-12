@@ -118,6 +118,7 @@ removeUselessTests =
         True ~=? eq a3 (Automaton [0] ['a'] [] 0 [0]),
         True ~=? eq f (Automaton [0,1] ['a'] [(0,'a',1)] 0 [1]),
         True ~=? eq a (Automaton [0,1] ['a'] [(0,'a',1),(1,'a',0)] 0 [0])
+    ]
 
 infinite = Automaton [0,1] ['a'] [(0,'a',0)] 0 [0]
 
@@ -132,7 +133,7 @@ isFiniteLanguageTests = TestList [
 f = Automaton [0,1,2] ['a', 'b'] [(0,'a',1), (1,'b',2), (0,'b',0)] 0 [2]
 
 language'Tests = TestList [
-    [""] ~=? language' a2
+    [""] ~=? language' a2,
     ["a"] ~=? language' finite
     ]
 
