@@ -133,12 +133,12 @@ language' auto = if isFiniteLanguage auto
 
 -- Question 10: epsilon transitions
 epsilonClosure :: Automaton -> [State] -> [State]
-epsilonClosure auto states = epsilonHelper auto states
+epsilonClosure auto states = sort(nub(epsilonHelper auto states))
 	
 epsilonHelper :: Automaton -> [State] -> [State]
 epsilonHelper auto [] = []
-epsilonHelper auto (x:[]) = [x] ++ (getRelTrans auto x)   
-epsilonHelper auto (x:xs) = [x] ++ (getRelTrans auto x) ++ (epsilonHelper auto xs)
+epsilonHelper auto (x:[]) = [x] ++ (epsilonHelper auto (getRelTrans auto x))   
+epsilonHelper auto (x:xs) = [x] ++ (epsilonHelper auto (getRelTrans auto x))  ++ (epsilonHelper auto xs)
 
 getRelTrans :: Automaton -> State -> [State]
 getRelTrans auto state = transToList (filter (\(x, y, z) -> state == x) (getEpsilonTrans auto)) 
