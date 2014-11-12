@@ -98,8 +98,6 @@ possibleOutcomesTests = TestList [
 
     ]
 
-
-
 ex2 = Automaton [0,1,2]
                 ['a','b','c']
                 [(0,'a',1),
@@ -131,16 +129,20 @@ acceptTests = TestList [
     False ~=? accept finite "aaa"
     ]
 
+a2 = Automaton [0,1] ['a'] [(0,'a',1)] 0 [0]
+
 languageTests = TestList [
     ["","aa"] ~=? take 2 (language a1),
     ["","aa","aaaa","aaaaaa","aaaaaaaa","aaaaaaaaaa","aaaaaaaaaaaa"] ~=? take 7 (language a1),
     ["aa","aab"] ~=? take 2 (language ex),
-    ["aa","aab","aba","baa","aaaa"] ~=? take 5 (language ex)
+    ["aa","aab","aba","baa","aaaa"] ~=? take 5 (language ex),
+    ["","aa","ab","ba","bb"] ~=? take 5 (language b1),
+    [""] ~=? take 1 (language empty),
+    [""] ~=? take 3 (language empty),
+    ["ab","bb"] ~=? take 2 (language ex2),
+    ["ab","bb","cb"] ~=? take 3 (language ex2),
+    ["a"] ~=? take 1 (language finite)
     ]
-
-a2 = Automaton [0,1] ['a'] [(0,'a',1)] 0 [0]
-
-
 
 eq :: Automaton -> Automaton -> Bool
 eq (Automaton s1 a1 ts1 i1 f1) (Automaton s2 a2 ts2 i2 f2) =
