@@ -193,11 +193,10 @@ isFiniteLanguageTests = TestList [
     True ~=? isFiniteLanguage empty
     ]
 
-f = Automaton [0,1,2] ['a', 'b'] [(0,'a',1), (1,'b',2), (0,'b',0)] 0 [2]
-f2 = Automaton 
-
 language'Tests = TestList [
+    [""] ~=? language' a1,
     [""] ~=? language' a2,
+    ["aa","aab","aba"] ~=? take 3 (language' ex),
     ["a"] ~=? language' finite,
 	["","a","aa"] ~=? take 3 (language' infinite)
     ]
