@@ -199,26 +199,28 @@ f2 = Automaton
 language'Tests = TestList [
     [""] ~=? language' a2,
     ["a"] ~=? language' finite,
-	["","a","aa"] ~=? take 3 language' infinite
+	["","a","aa"] ~=? take 3 (language' infinite)
     ]
 
-a3 = Automaton [0,1,2] ['a','b'] [(0,' ',2),(0,'a',1),(2,'b',0)] 0 [1]
-a4 = Automaton [0,1,2,3] ['a','b'] [(0,' ',2),(0,' ',1),(2,'b',3),(1,'b',3),(2,' ',3)] 0 [1]
-a5 = Automaton [0,1,2,3] ['a','c'] [(0,'a',1),(2,'c',3)] 0 [3]
-a6 = Automaton [0,1,2,3,4,5] ['a','b'] [(0,' ',1),(0,' ',4),(1,'a',2),(2,' ',3),(2,'a',3),(4,'b',5)] 0 [3]
-a7 = Automaton [0,1,2,3,4,5] ['a','b'] [(0,' ',1),(0,' ',4),(1,' ',2),(2,' ',3),(2,'a',3),(4,'b',5)] 0 [3]
+ep2 = Automaton [0] ['a'] [(0,' ',1)] 0 [0]
+ep3 = Automaton [0,1,2] ['a','b'] [(0,' ',2),(0,'a',1),(2,'b',0)] 0 [1]
+ep4 = Automaton [0,1,2,3] ['a','b'] [(0,' ',2),(0,' ',1),(2,'b',3),(1,'b',3),(2,' ',3)] 0 [1]
+ep5 = Automaton [0,1,2,3] ['a','c'] [(0,'a',1),(2,'c',3)] 0 [3]
+ep6 = Automaton [0,1,2,3,4,5] ['a','b'] [(0,' ',1),(0,' ',4),(1,'a',2),(2,' ',3),(2,'a',3),(4,'b',5)] 0 [3]
+ep7 = Automaton [0,1,2,3,4,5] ['a','b'] [(0,' ',1),(0,' ',4),(1,' ',2),(2,' ',3),(2,'a',3),(4,'b',5)] 0 [3]
 
 
 epsilonClosureTests = TestList [
-    [0,2] ~=? epsilonClosure a3 [0],
-	[1] ~=? epsilonClosure a4 [1],	
-	[0,1,2,3] ~=? epsilonClosure a4 [0,2],
-	[] ~=? epsilonClosure a4 [],
-	[1,2,3] ~=? epsilonClosure a5 [1,2,3],
-	[1] ~=? epsilonClosure a5 [1,4,5],
-	[0,1,4] ~=? epsilonClosure a6 [0],
-	[2,3,4] ~=? epsilonClosure a6 [2,4],
-	[0,1,2,3,4] ~=? epsilonClosure a7 [0]
+    [0] ~=? epsilonClosure ep2 [0],
+    [0,2] ~=? epsilonClosure ep3 [0],
+	[1] ~=? epsilonClosure ep4 [1],	
+	[0,1,2,3] ~=? epsilonClosure ep4 [0,2],
+	[] ~=? epsilonClosure ep4 [],
+	[1,2,3] ~=? epsilonClosure ep5 [1,2,3],
+	[1] ~=? epsilonClosure ep5 [1,4,5],
+	[0,1,4] ~=? epsilonClosure ep6 [0],
+	[2,3,4] ~=? epsilonClosure ep6 [2,4],
+	[0,1,2,3,4] ~=? epsilonClosure ep7 [0]
     ]
 
 main :: IO ()
