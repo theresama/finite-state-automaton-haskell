@@ -41,8 +41,11 @@ extendTests = TestList [
 allStringsTests = TestList [
     [""] ~=? allStrings "" !! 0,
     [""] ~=? allStrings "ahdsfljkas" !! 0,
+    ["a"] ~=? allStrings "a" !! 1,
+    ["aaaaaaaaaa"] ~=? allStrings "a" !! 10,
+    ["a", "b", "c"] ~=? allStrings "abc" !! 1,
     ["a", "b", "c"] ~=? allStrings "cba" !! 1,
-    ["a", "b", "c"] ~=? allStrings "cba" !! 1,
+    ["x","y","z"] ~=? allStrings "zxy" !! 1,
     ["aa","ab","ac","ax","ay","az","ba",
     "bb","bc","bx","by","bz","ca","cb",
     "cc","cx","cy","cz","xa","xb","xc",
@@ -50,7 +53,13 @@ allStringsTests = TestList [
     "yy","yz","za","zb","zc","zx","zy","zz"] 
     ~=? allStrings "cbazyx" !! 2,
     ["aa", "ab", "ba", "bb"] ~=? allStrings "ab" !! 2,
-    ["aaa","aab","aba","abb","baa","bab","bba","bbb"] ~=? allStrings "ab" !! 3
+    ["aaa","aab","aba","abb","baa","bab","bba","bbb"] ~=? allStrings "ab" !! 3,
+    ["aaa","aam","aaz","ama","amm","amz","aza",
+    "azm","azz","maa","mam","maz","mma","mmm","mmz",
+    "mza","mzm","mzz","zaa","zam","zaz","zma","zmm",
+    "zmz","zza","zzm","zzz"] ~=? allStrings "zam" !! 3,
+    ["dd","di","do","dz","id","ii","io","iz","od",
+    "oi","oo","oz","zd","zi","zo","zz"] ~=? allStrings "zoid" !! 2
     ]
 
 empty = Automaton [0] ['a'] [] 0 [0]
