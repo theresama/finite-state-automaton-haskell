@@ -35,8 +35,6 @@ tableToDelta :: [Transition] -> State -> Symbol -> [State]
 tableToDelta trans = (\given_state given_symbol -> sort(nub(concatMap (\(s1, symbol, s2) -> 
     if s1 == given_state && symbol == given_symbol then [s2] else []) trans)))  
 
---ACENDING ORDER AND NO DUPLICATES*****
-
 extend :: (State -> Symbol -> [State]) -> (State -> String -> [State])
 extend f = (\givenState givenString -> 
         if (givenString == "") then [givenState] else
@@ -114,7 +112,8 @@ isFinal auto outcome = (length (filter (\y -> isFinalHelper auto y) outcome)) > 
 
 --return true if given possible outcome ends in final state
 isFinalHelper :: Automaton -> (String, [State]) -> Bool
-isFinalHelper auto (s, states) = (length (filter (\x -> x `elem` (final auto)) states)) > 0 
+isFinalHelper auto (s, states) = (length (filter (\x -> 
+    x `elem` (final auto)) states)) > 0 
 
 isFiniteLanguage :: Automaton -> Bool
 isFiniteLanguage auto = 
@@ -134,14 +133,16 @@ epsilonClosure auto states = sort(nub(epsilonHelper auto states))
 	
 epsilonHelper :: Automaton -> [State] -> [State]
 epsilonHelper auto [] = []
-epsilonHelper auto (x:[]) = [x] ++ (epsilonHelper auto (getRelTrans auto x))   
-epsilonHelper auto (x:xs) = [x] ++ (epsilonHelper auto (getRelTrans auto x))  ++ (epsilonHelper auto xs)
+epsilonHelper auto (x:[]) = [x] ++ (epsilonHelper auto (getRelTrans auto x)) 
+epsilonHelper auto (x:xs) = [x] ++ (epsilonHelper auto (getRelTrans auto x))
+                                ++ (epsilonHelper auto xs)
 
 getRelTrans :: Automaton -> State -> [State]
-getRelTrans auto state = transToList (filter (\(x, y, z) -> state == x) (getEpsilonTrans auto)) 
+getRelTrans auto state = transToList (filter (\(x, y, z) -> 
+                                            state == x) (getEpsilonTrans auto))
 
 getEpsilonTrans :: Automaton -> [Transition]
-getEpsilonTrans auto = filter (\(_, x, _) -> x == ' ') (transitions auto) 
+getEpsilonTrans auto = filter (\(_, x, _) -> x == ' ') (transitions auto)
 
 transToList :: [Transition] -> [State]
 transToList trans = map (\(_,_,x) -> x) (trans) 

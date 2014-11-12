@@ -5,15 +5,33 @@ import Dfa (State, Symbol, Transition, Automaton(..),
             accept, language,
             removeUseless, isFiniteLanguage, language', epsilonClosure)
 
-
 tableToDeltaTests = TestList [
     [2] ~=? tableToDelta [(1, 'f', 2)] 1 'f',
     -- Note: a symbol could be passed in that doesn't appear in any transition
     [] ~=? tableToDelta [(1, 'f', 2)] 1 'b',
-    [] ~=? tableToDelta [(1, 'f', 2)] 1 ' '
+    [] ~=? tableToDelta [(1, 'f', 2)] 1 ' ',
+    [2] ~=?  tableToDelta [(0,'a',1),(1,'a',2),(0,'b',0),(1,'b',1),(2,'b',2),(1,'a',0)] 2 'b',
+    [0, 2] ~=?  tableToDelta [(0,'a',1),(1,'a',2),(0,'b',0),(1,'b',1),(2,'b',2),(1,'a',0)] 1 'a',
+    [] ~=?  tableToDelta [(0,'a',1),(1,'a',2),(0,'b',0),(1,'b',1),(2,'b',2),(1,'a',0)] 2 'a',
+    [] ~=? tableToDelta [(0,'a',1), (1,'b',2), (0,'b',0)] 3 'a',
+    [] ~=? tableToDelta [(0,'a',1), (1,'b',2), (0,'b',0)] 3 'c',
+    [2, 4, 5] ~=? tableToDelta [(3,'c',5), (3,'c',4), (3,'c',2)] 3 'c',
+    [3] ~=? tableToDelta [(3,'c',3), (3,'c',3), (3,'c',3)] 3 'c'
     ]
 
+
 extendTests = TestList [
+    [0] ~=? extend (tableToDelta [(0,'a',1),(1,'a',0)]) 1 "a",
+    [1] ~=? extend (tableToDelta [(0,'a',1),(1,'a',0)]) 1 "aa",
+    [0] ~=? extend (tableToDelta [(0,'a',1),(1,'a',0)]) 1 "aaa",
+    [1] ~=? extend (tableToDelta [(0,'a',1),(1,'a',0)]) 0 "a",
+    [0] ~=? extend (tableToDelta [(0,'a',1),(1,'a',0)]) 0 "aa",
+    [1] ~=? extend (tableToDelta [(0,'a',1),(1,'a',0)]) 0 "aaa",
+    [] ~=? extend (tableToDelta [(3,'c',3), (3,'c',3), (3,'c',3)]) 1 "fff",
+    [5] ~=? extend (tableToDelta [(3,'c',3), (3,'c',3), (3,'c',3)]) 5 "",
+    [] ~=? extend (tableToDelta [(3,'c',3), (3,'c',3), (3,'c',3)]) 0 "zxc",
+    [3] ~=? extend (tableToDelta [(3,'c',3), (3,'c',3), (3,'c',3)]) 3 "ccc",
+    [1, 4, 5] ~=? extend (tableToDelta [(3,'c',5), (3,'c',4), (3,'c',1), (4,'c',2), (5,'c',3)]) 3 "ccccc",
     [2] ~=? extend (tableToDelta [(1, 'f', 2), (2, 'f', 2)]) 1 "ff",
     [1] ~=? extend (tableToDelta [(1, 'f', 2), (2, 'f', 2)]) 1 "",
     [2] ~=? extend (tableToDelta [(1, 'f', 2), (2, 'f', 1)]) 1 "fff",
