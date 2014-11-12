@@ -187,7 +187,10 @@ isFiniteLanguageTests = TestList [
     False ~=? isFiniteLanguage infinite,
     True ~=? isFiniteLanguage finite,
     False ~=? isFiniteLanguage a1,
-    False ~=? isFiniteLanguage ex
+    False ~=? isFiniteLanguage ex,
+    False ~=? isFiniteLanguage ex2,
+    True ~=? isFiniteLanguage b1,
+    True ~=? isFiniteLanguage empty
     ]
 
 f = Automaton [0,1,2] ['a', 'b'] [(0,'a',1), (1,'b',2), (0,'b',0)] 0 [2]
