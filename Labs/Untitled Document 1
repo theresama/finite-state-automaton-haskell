@@ -1,3 +1,0 @@
-
-
-data Tree a = Node a left right | Empty
